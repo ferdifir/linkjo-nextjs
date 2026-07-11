@@ -1,0 +1,164 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Tenant {
+  id             String     @id @default(cuid())
+  name           String
+  slug           String?    @unique
+  description    String     @default("")
+  operationalHours String  @default("") @map("operational_hours")
+  latitude       Float?
+  longitude      Float?
+  setupCompleted Boolean    @default(false) @map("setup_completed")
+  createdAt      DateTime   @default(now()) @map("created_at")
+  users          User[]
+  antrian        Antrian[]
+  bookings       Booking[]
+  services       Service[]
+  histories      History[]
+  templates      Template[]
+
+  @@map("tenants")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  tenantId  String   @map("tenant_id")
+  phone     String   @unique
+  email     String?  @unique
+  username  String?  @unique
+  name      String
+  createdAt DateTime @default(now()) @map("created_at")
+  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@map("users")
+}
+
+model OtpCode {
+  id        String   @id @default(cuid())
+  phone     String
+  code      String
+  attempts  Int      @default(0)
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([phone])
+  @@map("otp_codes")
+}
+
+model Antrian {
+  id        BigInt   @id @default(autoincrement())
+  tenantId  String   @map("tenant_id")
+  noAntrian Int      @map("no_antrian")
+  queueDate DateTime @map("queue_date") @db.Date
+  nama      String
+  phone     String?
+  status    QueueStatus @default(menunggu)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, queueDate, status])
+  @@unique([tenantId, queueDate, noAntrian])
+  @@map("antrian")
+}
+
+model Booking {
+  id          BigInt        @id @default(autoincrement())
+  tenantId    String        @map("tenant_id")
+  serviceId   String?       @map("service_id")
+  publicToken String        @unique @map("public_token")
+  customerName String       @map("customer_name")
+  phone       String
+  service     String
+  serviceDurationMinutes Int @default(30) @map("service_duration_minutes")
+  scheduledAt DateTime      @map("scheduled_at")
+  notes       String        @default("")
+  status      BookingStatus @default(pending)
+  createdAt   DateTime      @default(now()) @map("created_at")
+  updatedAt   DateTime      @updatedAt @map("updated_at")
+  tenant      Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  serviceRef  Service?      @relation(fields: [serviceId], references: [id], onDelete: SetNull)
+
+  @@index([tenantId, scheduledAt])
+  @@index([tenantId, phone])
+  @@index([tenantId, serviceId])
+  @@map("bookings")
+}
+
+model Service {
+  id              String    @id @default(cuid())
+  tenantId        String    @map("tenant_id")
+  name            String
+  description     String    @default("")
+  durationMinutes Int       @default(30) @map("duration_minutes")
+  price           Int?
+  active          Boolean   @default(true)
+  sortOrder       Int       @default(0) @map("sort_order")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  tenant          Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  bookings        Booking[]
+
+  @@index([tenantId, active, sortOrder])
+  @@map("services")
+}
+
+model RateLimit {
+  key       String   @id
+  count     Int      @default(0)
+  resetAt   DateTime @map("reset_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("rate_limits")
+}
+
+model History {
+  id          BigInt   @id @default(autoincrement())
+  tenantId    String   @map("tenant_id")
+  nomor       String
+  role        String
+  content     String?
+  toolCallId  String?  @map("tool_call_id")
+  toolName    String?  @map("tool_name")
+  toolCalls   String?
+  createdAt   DateTime @default(now()) @map("created_at")
+  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, nomor])
+  @@map("history")
+}
+
+model Template {
+  id       BigInt  @id @default(autoincrement())
+  tenantId String  @map("tenant_id")
+  key      String
+  value    String
+  tenant   Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, key])
+  @@map("templates")
+}
+
+enum QueueStatus {
+  menunggu
+  dipanggil
+  selesai
+  batal
+
+  @@map("queue_status")
+}
+
+enum BookingStatus {
+  pending
+  confirmed
+  cancelled
+  rescheduled
+
+  @@map("booking_status")
+}
