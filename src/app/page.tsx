@@ -2,12 +2,20 @@
 
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
-import { Star, ShieldCheck, Monitor, Smartphone, BrainCircuit, ChevronRight, Loader2 } from "lucide-react"
+import { Star, ShieldCheck, Monitor, Smartphone, BrainCircuit, ChevronRight, Loader2, CheckCircle2 } from "lucide-react"
 import { useState, useEffect, useRef } from "react"
 import { validateSlug } from "@/lib/validation"
 import { useAuth } from "@/contexts/auth-context"
 
 const RESERVED_SLUG_KEY = "linkjo_reserved_slug"
+
+function formatBusinessName(slug: string) {
+  return slug
+    .split("-")
+    .filter(Boolean)
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ")
+}
 
 function ProductVisual({ className }: { className: string }) {
   return (
@@ -121,7 +129,7 @@ export default function LandingPage() {
   const [activeFeature, setActiveFeature] = useState(0)
   const [slug, setSlug] = useState("")
   const [checkingSlug, setCheckingSlug] = useState(false)
-  const [slugMessage, setSlugMessage] = useState("Gratis, tanpa kartu kredit.")
+  const [slugMessage, setSlugMessage] = useState("Pelanggan membuka URL ini untuk booking atau mengambil nomor antrean.")
   const [slugMessageTone, setSlugMessageTone] = useState<"neutral" | "error">("neutral")
   const [availableSlug, setAvailableSlug] = useState("")
   const [showSignupDialog, setShowSignupDialog] = useState(false)
@@ -148,7 +156,7 @@ export default function LandingPage() {
   const handleSlugChange = (value: string) => {
     setSlug(value.toLowerCase())
     setAvailableSlug("")
-    setSlugInfo("Gratis, tanpa kartu kredit.")
+    setSlugInfo("Pelanggan membuka URL ini untuk booking atau mengambil nomor antrean.")
   }
 
   const handleReserveUrl = async (e: React.FormEvent) => {
@@ -291,14 +299,20 @@ export default function LandingPage() {
 
           {/* Reserve URL form */}
           <form onSubmit={handleReserveUrl} className="w-full">
+            <div className="mb-2 px-1">
+              <label htmlFor="business-slug" className="text-xs font-bold tracking-wide text-white">
+                Buat halaman antrean bisnismu
+              </label>
+            </div>
             <div className="flex items-center justify-between gap-2 rounded-xl border border-white/5 bg-zinc-900/40 p-2.5 shadow-lg transition-all focus-within:border-emerald-400/30 focus-within:ring-1 focus-within:ring-emerald-400/20 md:rounded-2xl md:p-2.5">
               <div className="flex min-w-0 flex-1 items-center pl-1">
                 <span className="font-mono text-xs font-medium text-emerald-400 select-none md:text-xs">linkjo.co/</span>
                 <input
+                  id="business-slug"
                   type="text"
                   value={slug}
                   onChange={(e) => handleSlugChange(e.target.value)}
-                  placeholder="nama-bisnis"
+                  placeholder="nama-klinik, barbershop-andi, atau bengkel-maju"
                   className="min-w-0 flex-1 border-none bg-transparent p-1 text-xs font-semibold text-white outline-none placeholder:text-zinc-600 md:text-xs"
                 />
               </div>
@@ -307,7 +321,7 @@ export default function LandingPage() {
                 disabled={checkingSlug}
                 className="flex shrink-0 cursor-pointer items-center gap-1 rounded-lg bg-emerald-400 px-3 py-2 text-xs font-bold text-zinc-950 shadow-lg shadow-emerald-500/20 transition-all hover:bg-emerald-400/90 active:scale-95 disabled:pointer-events-none disabled:opacity-70 md:rounded-xl md:px-4 md:py-2.5 md:text-xs"
               >
-                <span>{checkingSlug ? "Mengecek" : "Pesan URL"}</span>
+                <span>{checkingSlug ? "Mengecek" : "Cek URL"}</span>
                 {checkingSlug ? (
                   <Loader2 className="size-3.5 animate-spin stroke-[2.5] md:size-3.5" />
                 ) : (
@@ -379,14 +393,41 @@ export default function LandingPage() {
 
       {showSignupDialog && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4 backdrop-blur-sm">
-          <div className="w-full max-w-sm rounded-2xl border border-white/10 bg-zinc-950 p-5 shadow-2xl shadow-emerald-500/10">
+          <div className="w-full max-w-md rounded-2xl border border-white/10 bg-zinc-950 p-5 shadow-2xl shadow-emerald-500/10">
             <div className="space-y-2">
               <p className="font-mono text-xs font-medium text-emerald-400">linkjo.co/{availableSlug}</p>
-              <h2 className="text-lg font-bold tracking-tight text-white">URL tersedia</h2>
+              <div className="flex items-center gap-2">
+                <CheckCircle2 className="size-4 text-emerald-400" />
+                <h2 className="text-lg font-bold tracking-tight text-white">URL ini tersedia</h2>
+              </div>
               <p className="text-sm leading-relaxed text-zinc-400">
-                Daftar sekarang untuk mengaktifkan halaman publik antrian dan booking bisnis ini.
+                Klaim URL ini untuk membuat halaman publik tempat pelanggan mengambil antrean atau melakukan booking melalui WhatsApp.
               </p>
             </div>
+            <div className="mt-4 rounded-xl border border-white/10 bg-zinc-900/60 p-3">
+              <div className="mb-3 flex items-center gap-3">
+                <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-emerald-400 text-sm font-black text-zinc-950">
+                  {formatBusinessName(availableSlug).slice(0, 2) || "LJ"}
+                </div>
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-bold text-white">{formatBusinessName(availableSlug) || "Nama Bisnis"}</p>
+                  <p className="text-xs text-zinc-500">linkjo.co/{availableSlug}</p>
+                </div>
+              </div>
+              <div className="mb-3 rounded-lg border border-emerald-400/15 bg-emerald-400/5 px-3 py-2">
+                <p className="text-[11px] font-medium text-zinc-400">Antrean saat ini</p>
+                <p className="text-sm font-bold text-emerald-300">4 orang menunggu</p>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <div className="rounded-lg bg-emerald-400 px-3 py-2 text-center text-[11px] font-bold text-zinc-950">
+                  Ambil Nomor Antrean
+                </div>
+                <div className="rounded-lg border border-white/10 bg-zinc-950 px-3 py-2 text-center text-[11px] font-bold text-zinc-200">
+                  Booking Jadwal
+                </div>
+              </div>
+            </div>
+            <p className="mt-3 text-xs font-medium text-zinc-500">Gratis, tanpa kartu kredit.</p>
             <div className="mt-5 flex gap-2">
               <button
                 type="button"
@@ -400,7 +441,7 @@ export default function LandingPage() {
                 onClick={handleSignupWithSlug}
                 className="h-10 flex-1 rounded-lg bg-emerald-400 px-4 text-xs font-bold text-zinc-950 shadow-lg shadow-emerald-500/20 transition-colors hover:bg-emerald-400/90"
               >
-                Daftar
+                Klaim dan daftar
               </button>
             </div>
           </div>
