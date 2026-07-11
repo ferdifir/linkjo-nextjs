@@ -4,6 +4,7 @@ import { AuthProvider } from "@/contexts/auth-context"
 import "./globals.css"
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://linkjo.co"),
   title: "Linkjo",
   description: "Manajemen Antrian Pintar",
 }

@@ -1,0 +1,19 @@
+<svg width="560" height="160" viewBox="0 0 560 160" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="560" height="160" rx="32" fill="#09090B"/>
+  <g transform="translate(40 40)">
+    <rect width="80" height="80" rx="22" fill="url(#bg)"/>
+    <g transform="rotate(-35 40 40)">
+      <rect x="20" y="26.667" width="40" height="26.667" rx="13.333" stroke="#052018" stroke-width="10"/>
+      <path d="M30 40h20" stroke="white" stroke-width="5" stroke-linecap="round" opacity="0.9"/>
+    </g>
+  </g>
+  <text x="144" y="84" fill="white" font-family="Inter, Arial, Helvetica, sans-serif" font-size="54" font-weight="800" letter-spacing="-1">linkjo</text>
+  <text x="148" y="112" fill="#34D399" font-family="Consolas, monospace" font-size="16" font-weight="700" letter-spacing="5">QUEUE.AI</text>
+  <defs>
+    <linearGradient id="bg" x1="13.333" y1="8.333" x2="66.667" y2="71.667" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#6EE7B7"/>
+      <stop offset="0.55" stop-color="#10B981"/>
+      <stop offset="1" stop-color="#059669"/>
+    </linearGradient>
+  </defs>
+</svg>
