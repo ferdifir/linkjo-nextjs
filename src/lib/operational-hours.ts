@@ -10,7 +10,12 @@ export type OperationalHoursConfig = {
   weekly?: Partial<Record<DayKey, TimeRange[]>>
 }
 
-const DAY_ORDER: DayKey[] = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"]
+export const DAY_ORDER: DayKey[] = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"]
+export const DEFAULT_OPERATIONAL_HOURS_RANGE: TimeRange = { start: "06:00", end: "17:00" }
+export const DEFAULT_OPERATIONAL_HOURS = JSON.stringify({
+  timeZone: "Asia/Jakarta",
+  weekly: Object.fromEntries(DAY_ORDER.map((day) => [day, [DEFAULT_OPERATIONAL_HOURS_RANGE]])),
+} satisfies Required<OperationalHoursConfig>)
 
 const DAY_LABELS: Record<DayKey, string> = {
   mon: "Senin",
@@ -90,6 +95,50 @@ export function parseOperationalHoursConfig(rawConfig: string): OperationalHours
   } catch {
     return null
   }
+}
+
+export function normalizeOperationalHoursConfig(input: unknown): string {
+  if (input === undefined || input === null || input === "") return ""
+
+  const parsed = typeof input === "string" ? JSON.parse(input) as OperationalHoursConfig : input as OperationalHoursConfig
+  if (!parsed || typeof parsed !== "object" || !parsed.weekly || typeof parsed.weekly !== "object") {
+    throw new Error("invalid operational hours")
+  }
+
+  const timeZone = typeof parsed.timeZone === "string" && parsed.timeZone.trim()
+    ? parsed.timeZone.trim()
+    : "Asia/Jakarta"
+  const weekly: Partial<Record<DayKey, TimeRange[]>> = {}
+
+  for (const key of Object.keys(parsed.weekly)) {
+    if (!isDayKey(key)) throw new Error("invalid day")
+  }
+
+  for (const day of DAY_ORDER) {
+    const ranges = parsed.weekly[day]
+    if (ranges === undefined) continue
+    if (!Array.isArray(ranges)) throw new Error("invalid ranges")
+
+    const normalizedRanges = ranges.map((range) => {
+      if (!range || typeof range !== "object") throw new Error("invalid range")
+      if (!isValidTime(range.start) || !isValidTime(range.end)) throw new Error("invalid time")
+      if (range.start === range.end) throw new Error("invalid time range")
+      return { start: range.start, end: range.end }
+    })
+
+    if (normalizedRanges.length > 0) weekly[day] = normalizedRanges
+  }
+
+  if (Object.keys(weekly).length === 0) return ""
+  return JSON.stringify({ timeZone, weekly })
+}
+
+function isDayKey(value: string): value is DayKey {
+  return DAY_ORDER.includes(value as DayKey)
+}
+
+function isValidTime(value: unknown): value is string {
+  return typeof value === "string" && parseTimeToMinutes(value) !== null
 }
 
 function localMinutes(date: Date, timeZone: string) {

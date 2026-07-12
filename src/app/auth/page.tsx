@@ -9,6 +9,7 @@ import { useAuth } from "@/contexts/auth-context"
 import { Loader2, Sparkles, ArrowLeft, ChevronRight } from "lucide-react"
 import { toast } from "sonner"
 import { validateSlug } from "@/lib/validation"
+import { publicAppHost } from "@/lib/public-url"
 
 type Step = "phone" | "otp" | "username"
 const RESERVED_SLUG_KEY = "linkjo_reserved_slug"
@@ -24,6 +25,7 @@ export default function AuthPage() {
   const [countdown, setCountdown] = useState(0)
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const visibleStep = user && !user.username ? "username" : step
+  const publicHost = publicAppHost()
 
   useEffect(() => {
     if (countdown > 0) {
@@ -163,7 +165,7 @@ export default function AuthPage() {
               <p className="mt-1 text-xs leading-relaxed text-zinc-500">
                 {visibleStep === "phone" && "Masuk pakai nomor WhatsApp."}
                 {visibleStep === "otp" && `Kode dikirim ke ${phone || user?.phone || ""}`}
-                {visibleStep === "username" && "linkjo.co/{username}"}
+                {visibleStep === "username" && `${publicHost}/{username}`}
               </p>
             </div>
           </div>
@@ -248,7 +250,7 @@ export default function AuthPage() {
                   </Label>
                   <div className="flex h-10 items-center rounded-lg border border-white/10 bg-zinc-950/60 px-3 focus-within:border-emerald-400/30 focus-within:ring-1 focus-within:ring-emerald-400/20">
                     <span className="font-mono text-xs font-medium text-emerald-400 select-none shrink-0">
-                      linkjo.co/
+                      {publicHost}/
                     </span>
                     <input
                       id="username"

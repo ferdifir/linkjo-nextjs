@@ -8,20 +8,19 @@ import { Input } from "@/components/ui/input"
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { api } from "@/lib/api"
 import { useAuth } from "@/contexts/auth-context"
-import { ArrowLeft, Loader2, RotateCcw } from "lucide-react"
+import { ArrowLeft, ExternalLink, Loader2, RotateCcw } from "lucide-react"
 import { toast } from "sonner"
 import { Label } from "@/components/ui/label"
 import { OperationalHoursEditor } from "@/components/operational-hours-editor"
 import { ServicesEditor, type ServiceEditorItem } from "@/components/services-editor"
 import { LocationPicker, type LocationValue } from "@/components/location-picker"
-
-type Template = {
-  key: string
-  value: string
-}
+import { MessageTemplatesEditor } from "@/components/message-templates-editor"
+import { missingTemplateVariables, type MessageTemplate } from "@/lib/message-templates"
+import { publicTenantUrl } from "@/lib/public-url"
 
 type TenantProfile = {
   name: string
+  owner_name: string
   slug: string | null
   description: string
   latitude: number | null
@@ -34,8 +33,9 @@ type TenantProfile = {
 export default function SettingsPage() {
   const router = useRouter()
   const { user, logout } = useAuth()
-  const [templates, setTemplates] = useState<Template[]>([])
-  const [editing, setEditing] = useState<Record<string, string>>({})
+  const publicProfileUrl = user?.username ? publicTenantUrl(user.username) : ""
+  const [ownerName, setOwnerName] = useState("")
+  const [templates, setTemplates] = useState<MessageTemplate[]>([])
   const [businessName, setBusinessName] = useState("")
   const [description, setDescription] = useState("")
   const [location, setLocation] = useState<LocationValue>({ latitude: null, longitude: null })
@@ -50,19 +50,16 @@ export default function SettingsPage() {
       try {
         const [profile, templateData] = await Promise.all([
           api<TenantProfile>("/tenant/profile"),
-          api<Template[]>("/templates"),
+          api<MessageTemplate[]>("/templates"),
         ])
 
         setBusinessName(profile.name)
+        setOwnerName(profile.owner_name)
         setDescription(profile.description)
         setLocation({ latitude: profile.latitude, longitude: profile.longitude })
         setOperationalHours(profile.operational_hours)
         setServices(profile.services.length > 0 ? profile.services : [{ name: "", description: "", duration_minutes: 30, price: null, active: true }])
         setTemplates(templateData)
-
-        const map: Record<string, string> = {}
-        templateData.forEach((t) => { map[t.key] = t.value })
-        setEditing(map)
       } catch {
         toast.error("Gagal memuat pengaturan")
       } finally {
@@ -78,6 +75,10 @@ export default function SettingsPage() {
       toast.error("Nama bisnis harus diisi")
       return
     }
+    if (!ownerName.trim()) {
+      toast.error("Nama akun harus diisi")
+      return
+    }
     if (!services.some((service) => service.name.trim())) {
       toast.error("Minimal satu layanan harus diisi")
       return
@@ -88,6 +89,7 @@ export default function SettingsPage() {
       await api("/tenant/profile", {
         method: "PUT",
         body: JSON.stringify({
+          owner_name: ownerName.trim(),
           name: businessName.trim(),
           description: description.trim(),
           latitude: location.latitude,
@@ -105,11 +107,18 @@ export default function SettingsPage() {
   }
 
   async function saveTemplate(key: string) {
+    const template = templates.find((item) => item.key === key)
+    if (!template) return
+    if (missingTemplateVariables(template.key, template.value).length > 0) {
+      toast.error("Token dinamis pada template pesan jangan diubah atau dihapus")
+      return
+    }
+
     setSaving(key)
     try {
       await api(`/templates/${key}`, {
         method: "PUT",
-        body: JSON.stringify({ value: editing[key] }),
+        body: JSON.stringify({ value: template.value }),
       })
       toast.success(`Template ${key} disimpan`)
     } catch {
@@ -123,11 +132,8 @@ export default function SettingsPage() {
     setSaving(key)
     try {
       await api(`/templates/${key}/reset`, { method: "POST" })
-      const data = await api<Template[]>("/templates")
+      const data = await api<MessageTemplate[]>("/templates")
       setTemplates(data)
-      const map: Record<string, string> = {}
-      data.forEach((t) => { map[t.key] = t.value })
-      setEditing(map)
       toast.success(`Template ${key} direset`)
     } catch {
       toast.error("Gagal mereset")
@@ -166,9 +172,19 @@ export default function SettingsPage() {
               <CardTitle className="text-sm text-white">Akun</CardTitle>
             </CardHeader>
             <CardContent className="space-y-1 text-sm text-zinc-400">
-              <p>{user.name}</p>
-              <p>{user.phone}</p>
-              {user.username && <p className="font-mono text-emerald-400">linkjo.co/{user.username}</p>}
+              <p>Nama: {ownerName || user.name || "Belum diisi"}</p>
+              <p>Nomor WhatsApp: {user.phone}</p>
+              {publicProfileUrl && (
+                <a
+                  href={publicProfileUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-1 font-mono text-emerald-400 hover:text-emerald-300"
+                >
+                  {publicProfileUrl}
+                  <ExternalLink className="size-3" />
+                </a>
+              )}
             </CardContent>
           </Card>
         )}
@@ -185,6 +201,13 @@ export default function SettingsPage() {
             ) : (
               <>
                 <div className="grid gap-4 sm:grid-cols-2">
+                  <Field label="Nama Akun">
+                    <Input
+                      value={ownerName}
+                      onChange={(e) => setOwnerName(e.target.value)}
+                      className="border-white/10 bg-zinc-950/60 text-sm text-white placeholder:text-zinc-600 focus-visible:border-emerald-400/30 focus-visible:ring-emerald-400/20"
+                    />
+                  </Field>
                   <Field label="Nama Bisnis">
                     <Input
                       value={businessName}
@@ -231,46 +254,39 @@ export default function SettingsPage() {
             ) : templates.length === 0 ? (
               <p className="text-sm text-zinc-500">Tidak ada template</p>
             ) : (
-              templates.map((t) => (
-                <div key={t.key} className="space-y-2">
-                  <label className="text-xs font-medium uppercase tracking-wide text-zinc-500">
-                    {t.key}
-                  </label>
-                  <div className="flex gap-2">
-                    <Input
-                      value={editing[t.key] ?? ""}
-                      onChange={(e) =>
-                        setEditing((prev) => ({ ...prev, [t.key]: e.target.value }))
-                      }
-                      className="border-white/10 bg-zinc-950/60 text-sm text-white placeholder:text-zinc-600 focus-visible:border-emerald-400/30 focus-visible:ring-emerald-400/20"
-                    />
+              <MessageTemplatesEditor
+                value={templates}
+                onChange={setTemplates}
+                renderActions={(template) => (
+                  <>
                     <Button
                       variant="outline"
-                      size="icon"
+                      size="icon-sm"
                       className="border-white/10 bg-zinc-900 text-zinc-300 hover:bg-zinc-800 hover:text-white"
-                      onClick={() => resetTemplate(t.key)}
-                      disabled={saving === t.key}
+                      onClick={() => resetTemplate(template.key)}
+                      disabled={saving === template.key}
                     >
-                      {saving === t.key ? (
+                      {saving === template.key ? (
                         <Loader2 className="size-4 animate-spin" />
                       ) : (
                         <RotateCcw className="size-4" />
                       )}
                     </Button>
                     <Button
+                      size="sm"
                       className="bg-emerald-400 font-bold text-zinc-950 hover:bg-emerald-400/90"
-                      onClick={() => saveTemplate(t.key)}
-                      disabled={saving === t.key}
+                      onClick={() => saveTemplate(template.key)}
+                      disabled={saving === template.key}
                     >
-                      {saving === t.key ? (
+                      {saving === template.key ? (
                         <Loader2 className="size-4 animate-spin" />
                       ) : (
                         "Simpan"
                       )}
                     </Button>
-                  </div>
-                </div>
-              ))
+                  </>
+                )}
+              />
             )}
           </CardContent>
         </Card>

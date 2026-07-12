@@ -2,6 +2,7 @@ import { prisma } from '@/lib/prisma'
 import { signToken, setTokenCookie } from '@/lib/auth'
 import { randomUUID } from 'crypto'
 import { normalizePhone } from '@/lib/validation'
+import { displayName } from '@/lib/display-name'
 import { checkRateLimit, clientIp, rateLimitResponse } from '@/lib/rate-limit'
 
 export async function POST(req: Request) {
@@ -45,7 +46,7 @@ export async function POST(req: Request) {
 
     await prisma.$transaction([
       prisma.tenant.create({ data: { id: tenantId, name: phone } }),
-      prisma.user.create({ data: { id: userId, tenantId, phone, name: phone } }),
+      prisma.user.create({ data: { id: userId, tenantId, phone, name: "" } }),
     ])
 
     user = await prisma.user.findUnique({ where: { id: userId }, include: { tenant: true } })!
@@ -61,15 +62,15 @@ export async function POST(req: Request) {
 
   const body = {
     token,
-    user: {
-      id: user.id,
-      phone: user.phone,
-      email: user.email,
-      username: user.username || '',
-      name: user.name,
-      tenant_id: user.tenantId,
-      setup_completed: user.tenant.setupCompleted,
-    },
+      user: {
+        id: user.id,
+        phone: user.phone,
+        email: user.email,
+        username: user.username || '',
+        name: displayName(user.name, user.phone),
+        tenant_id: user.tenantId,
+        setup_completed: user.tenant.setupCompleted,
+      },
     needs_setup: needsSetup,
   }
 

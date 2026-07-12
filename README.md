@@ -28,7 +28,7 @@ DATABASE_URL="postgresql://..."
 JWT_SECRET="long-random-secret"
 FONNTE_API_KEY="..."
 WA_WEBHOOK_SECRET="shared-secret-for-x-webhook-secret"
-PUBLIC_APP_URL="https://linkjo.co"
+NEXT_PUBLIC_PUBLIC_APP_URL="https://linkjo.co"
 ```
 
 Optional:
@@ -38,7 +38,7 @@ GROQ_API_KEY="..."
 GROQ_MODEL="llama-3.1-8b-instant"
 ```
 
-`JWT_SECRET` and `WA_WEBHOOK_SECRET` are mandatory in production. OTP and customer notifications are sent through Fonnte. `PUBLIC_APP_URL` is used for canonical public tenant URLs and QR codes. If `GROQ_API_KEY` is not set, the WhatsApp webhook still handles queue and booking commands with deterministic fallback replies.
+`JWT_SECRET` and `WA_WEBHOOK_SECRET` are mandatory in production. `WA_WEBHOOK_SECRET` is an application-level guard for inbound webhook URLs, not a Fonnte credential. OTP and customer notifications are sent through Fonnte. `NEXT_PUBLIC_PUBLIC_APP_URL` is used for canonical public tenant URLs, clickable account links, and QR codes. If `GROQ_API_KEY` is not set, the WhatsApp webhook still handles queue and booking commands with deterministic fallback replies.
 
 ## Database
 
@@ -100,7 +100,13 @@ Accepted JSON fields are intentionally flexible:
 }
 ```
 
-If `WA_WEBHOOK_SECRET` is set, send it as:
+Fonnte sends inbound payload fields such as `sender`, `message`, `name`, `location`, and `inboxid`. Configure one webhook URL per tenant and include the tenant slug plus webhook secret in the URL:
+
+```text
+POST /api/webhooks/whatsapp?tenant={tenant-slug}&secret=<secret>
+```
+
+If the webhook provider supports custom headers, the secret can also be sent as:
 
 ```text
 x-webhook-secret: <secret>
@@ -123,8 +129,64 @@ batal booking <nomor-booking> <token>
 
 ```bash
 npm run lint
+npm run test
 npm run build
+npm run test:e2e
 ```
+
+## CI/CD
+
+CI runs on pull requests and pushes to `main` through `.github/workflows/ci.yml`. It starts a PostgreSQL service, applies Prisma migrations, runs lint, unit tests, build, Playwright E2E, and a high-severity production dependency audit.
+
+Production deploy runs through `.github/workflows/deploy.yml` on manual dispatch or version tags matching `v*`. The deploy workflow repeats the validation suite first, then connects to the VPS over SSH and runs `scripts/deploy-vps.sh`. Application secrets stay on the server in:
+
+```text
+/var/www/linkjo-next/shared/.env
+```
+
+Required GitHub secret:
+
+```text
+VPS_SSH_KEY
+```
+
+Optional GitHub secrets override the defaults:
+
+```text
+VPS_HOST
+VPS_PORT
+VPS_USER
+PRODUCTION_URL
+```
+
+The deploy script uploads a timestamped release to `/var/www/linkjo-next/releases`, links the shared `.env`, runs `npm ci`, `prisma generate`, `prisma migrate deploy`, `npm run build`, then switches `/var/www/linkjo-next/current` and reloads PM2. If the local smoke test fails, it switches back to the previous release.
+
+Manual deploy from this machine:
+
+```bash
+scripts/deploy-vps.sh
+```
+
+Rollback to the previous release:
+
+```bash
+scripts/rollback-vps.sh
+```
+
+Rollback to a specific release directory name:
+
+```bash
+scripts/rollback-vps.sh 20260712180000-abcdef123456
+```
+
+Release versioning uses semantic version tags. For a patch release:
+
+```bash
+npm version patch
+git push origin main --follow-tags
+```
+
+Use `npm version minor` for compatible feature releases and `npm version major` for breaking releases.
 
 ## Notes
 

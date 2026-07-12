@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest"
-import { formatOperationalHours, isWithinOperationalHours } from "./operational-hours"
+import {
+  DEFAULT_OPERATIONAL_HOURS,
+  formatOperationalHours,
+  isWithinOperationalHours,
+  normalizeOperationalHoursConfig,
+} from "./operational-hours"
 
 const operationalHours = JSON.stringify({
   timeZone: "Asia/Jakarta",
@@ -37,5 +42,21 @@ describe("operational hours", () => {
   it("formats repeated day ranges compactly", () => {
     expect(formatOperationalHours(operationalHours)).toContain("Rabu-Jumat 09:00-17:00")
     expect(formatOperationalHours(operationalHours)).toContain("Senin 09:00-12:00, 13:00-17:00")
+  })
+
+  it("formats the default onboarding hours as every day", () => {
+    expect(formatOperationalHours(DEFAULT_OPERATIONAL_HOURS)).toBe("Senin-Minggu 06:00-17:00")
+  })
+
+  it("normalizes valid operational hours and rejects invalid ranges", () => {
+    expect(formatOperationalHours(normalizeOperationalHoursConfig(operationalHours))).toContain("Rabu-Jumat 09:00-17:00")
+    expect(() => normalizeOperationalHoursConfig(JSON.stringify({
+      timeZone: "Asia/Jakarta",
+      weekly: { mon: [{ start: "09:00", end: "09:00" }] },
+    }))).toThrow()
+    expect(() => normalizeOperationalHoursConfig(JSON.stringify({
+      timeZone: "Asia/Jakarta",
+      weekly: { monday: [{ start: "09:00", end: "17:00" }] },
+    }))).toThrow()
   })
 })

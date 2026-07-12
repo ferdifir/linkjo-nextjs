@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { cn } from "@/lib/utils"
-import type { DayKey, OperationalHoursConfig, TimeRange } from "@/lib/operational-hours"
+import { DEFAULT_OPERATIONAL_HOURS_RANGE, type DayKey, type OperationalHoursConfig, type TimeRange } from "@/lib/operational-hours"
 
 const DAYS: Array<{ key: DayKey; label: string }> = [
   { key: "mon", label: "Senin" },
@@ -26,8 +26,6 @@ const EMPTY_WEEKLY: Record<DayKey, TimeRange[]> = {
   sat: [],
   sun: [],
 }
-
-const DEFAULT_RANGE = { start: "06:00", end: "17:00" }
 
 export function OperationalHoursEditor({
   value,
@@ -58,13 +56,13 @@ export function OperationalHoursEditor({
       ...config,
       weekly: {
         ...config.weekly,
-        [day]: enabled ? [DEFAULT_RANGE] : [],
+        [day]: enabled ? [DEFAULT_OPERATIONAL_HOURS_RANGE] : [],
       },
     })
   }
 
   function setTime(day: DayKey, rangeIndex: number, field: keyof TimeRange, nextValue: string) {
-    const ranges = config.weekly[day].length > 0 ? config.weekly[day] : [DEFAULT_RANGE]
+    const ranges = config.weekly[day].length > 0 ? config.weekly[day] : [DEFAULT_OPERATIONAL_HOURS_RANGE]
     const nextRanges = ranges.map((range, index) => (
       index === rangeIndex ? { ...range, [field]: nextValue } : range
     ))
@@ -82,7 +80,7 @@ export function OperationalHoursEditor({
       ...config,
       weekly: {
         ...config.weekly,
-        [day]: [...config.weekly[day], DEFAULT_RANGE],
+        [day]: [...config.weekly[day], DEFAULT_OPERATIONAL_HOURS_RANGE],
       },
     })
   }
@@ -111,7 +109,7 @@ export function OperationalHoursEditor({
       <div className="grid gap-2">
         {DAYS.map((day) => {
           const enabled = config.weekly[day.key].length > 0
-          const ranges = enabled ? config.weekly[day.key] : [DEFAULT_RANGE]
+          const ranges = enabled ? config.weekly[day.key] : [DEFAULT_OPERATIONAL_HOURS_RANGE]
 
           return (
             <div
@@ -133,31 +131,42 @@ export function OperationalHoursEditor({
                 </label>
                 <div className="space-y-2">
                   {ranges.map((range, index) => (
-                    <div key={index} className="grid grid-cols-[1fr_1fr_auto] gap-2">
-                      <Input
-                        type="time"
-                        value={range.start}
-                        onChange={(event) => setTime(day.key, index, "start", event.target.value)}
-                        disabled={!enabled}
-                        className="h-9 border-white/10 bg-zinc-950/60 text-sm text-white"
-                      />
-                      <Input
-                        type="time"
-                        value={range.end}
-                        onChange={(event) => setTime(day.key, index, "end", event.target.value)}
-                        disabled={!enabled}
-                        className="h-9 border-white/10 bg-zinc-950/60 text-sm text-white"
-                      />
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        className="text-red-400 hover:bg-red-500/10"
-                        disabled={!enabled || ranges.length === 1}
-                        onClick={() => removeRange(day.key, index)}
-                      >
-                        <Trash2 className="size-4" />
-                      </Button>
+                    <div key={index} className="space-y-1">
+                      <div className="grid grid-cols-[1fr_1fr_auto] gap-2">
+                        <Input
+                          type="time"
+                          value={range.start}
+                          onChange={(event) => setTime(day.key, index, "start", event.target.value)}
+                          disabled={!enabled}
+                          className={cn(
+                            "h-9 border-white/10 bg-zinc-950/60 text-sm text-white",
+                            enabled && range.start === range.end && "border-red-400/40",
+                          )}
+                        />
+                        <Input
+                          type="time"
+                          value={range.end}
+                          onChange={(event) => setTime(day.key, index, "end", event.target.value)}
+                          disabled={!enabled}
+                          className={cn(
+                            "h-9 border-white/10 bg-zinc-950/60 text-sm text-white",
+                            enabled && range.start === range.end && "border-red-400/40",
+                          )}
+                        />
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="text-red-400 hover:bg-red-500/10"
+                          disabled={!enabled || ranges.length === 1}
+                          onClick={() => removeRange(day.key, index)}
+                        >
+                          <Trash2 className="size-4" />
+                        </Button>
+                      </div>
+                      {enabled && range.start === range.end && (
+                        <p className="text-[10px] text-red-300">Jam mulai dan selesai tidak boleh sama.</p>
+                      )}
                     </div>
                   ))}
                   {enabled && (

@@ -90,28 +90,48 @@ export default function DashboardPage() {
   }
 
   async function panggil(no: number) {
-    await api(`/queue/${no}/panggil`, { method: "PUT" })
-    await fetchQueue()
+    try {
+      await api(`/queue/${no}/panggil`, { method: "PUT" })
+      await fetchQueue()
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Gagal memanggil antrian")
+    }
   }
 
   async function selesai(no: number) {
-    await api(`/queue/${no}/selesai`, { method: "PUT" })
-    await fetchQueue()
+    try {
+      await api(`/queue/${no}/selesai`, { method: "PUT" })
+      await fetchQueue()
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Gagal menyelesaikan antrian")
+    }
   }
 
   async function batalkan(no: number) {
-    await api(`/queue/${no}/batalkan`, { method: "PUT" })
-    await fetchQueue()
+    try {
+      await api(`/queue/${no}/batalkan`, { method: "PUT" })
+      await fetchQueue()
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Gagal membatalkan antrian")
+    }
   }
 
   async function confirmBooking(id: string) {
-    await api(`/bookings/${id}/confirm`, { method: "PUT" })
-    await fetchBookings()
+    try {
+      await api(`/bookings/${id}/confirm`, { method: "PUT" })
+      await fetchBookings()
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Gagal menerima booking")
+    }
   }
 
   async function cancelBooking(id: string) {
-    await api(`/bookings/${id}/cancel`, { method: "PUT" })
-    await fetchBookings()
+    try {
+      await api(`/bookings/${id}/cancel`, { method: "PUT" })
+      await fetchBookings()
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Gagal membatalkan booking")
+    }
   }
 
   function statusColor(status: string) {

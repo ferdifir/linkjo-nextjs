@@ -1,10 +1,10 @@
 import { notFound } from "next/navigation"
-import { headers } from "next/headers"
 import { prisma } from "@/lib/prisma"
 import { estimateWaitMinutes, queueDateFor } from "@/lib/queue"
 import { SLUG_PATTERN } from "@/lib/validation"
 import { formatOperationalHours } from "@/lib/operational-hours"
 import { formatServices } from "@/lib/services"
+import { publicTenantUrl } from "@/lib/public-url"
 import PublicTenantClient from "./public-tenant-client"
 
 export default async function PublicTenantPage({ params }: { params: Promise<{ slug: string }> }) {
@@ -39,11 +39,7 @@ export default async function PublicTenantPage({ params }: { params: Promise<{ s
       where: { tenantId: tenant.id, queueDate, status: { in: ["menunggu", "dipanggil"] } },
     }),
   ])
-  const requestHeaders = await headers()
-  const host = requestHeaders.get("x-forwarded-host") || requestHeaders.get("host") || "linkjo.co"
-  const protocol = requestHeaders.get("x-forwarded-proto") || (host.startsWith("localhost") ? "http" : "https")
-  const baseUrl = (process.env.PUBLIC_APP_URL || `${protocol}://${host}`).replace(/\/$/, "")
-  const publicUrl = `${baseUrl}/${tenant.slug}`
+  const publicUrl = publicTenantUrl(tenant.slug)
 
   return (
     <PublicTenantClient

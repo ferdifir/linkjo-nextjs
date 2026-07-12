@@ -1,13 +1,6 @@
 import { sendWA } from "@/lib/fonnte"
+import { DEFAULT_TEMPLATES } from "@/lib/message-templates"
 import { prisma } from "@/lib/prisma"
-
-export const DEFAULT_TEMPLATES: Record<string, string> = {
-  queue_created: "Nomor antrian kamu #{no}. Estimasi tunggu sekitar {estimated_wait_min} menit. Kami akan kirim notifikasi saat giliranmu siap.",
-  queue_called: "Halo! Giliran kamu nomor #{no} sudah siap. Silakan menuju ke tempat kami.",
-  booking_created: "Booking #{booking_id} untuk {service} sudah masuk pada {scheduled_at}. Token kelola booking: {public_token}. Simpan token ini untuk jadwal ulang atau pembatalan.",
-  booking_rescheduled: "Booking #{booking_id} untuk {service} dijadwalkan ulang ke {scheduled_at}.",
-  booking_cancelled: "Booking #{booking_id} sudah dibatalkan.",
-}
 
 export async function notifyQueueCreated(tenantId: string, phone: string | null, no: number, estimatedWaitMin: number) {
   if (!phone) return

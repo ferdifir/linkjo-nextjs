@@ -1,4 +1,5 @@
 import { formatOperationalHours } from "@/lib/operational-hours"
+import { publicTenantUrl } from "@/lib/public-url"
 import { formatServices } from "@/lib/services"
 
 type TenantPromptProfile = {
@@ -19,7 +20,7 @@ export function getGroqApiKey(): string | null {
 }
 
 export function buildTenantSystemPrompt(tenant: TenantPromptProfile): string {
-  const publicUrl = tenant.slug ? `linkjo.co/${tenant.slug}` : "URL publik belum diatur"
+  const publicUrl = tenant.slug ? publicTenantUrl(tenant.slug) : "URL publik belum diatur"
   const operationalHours = formatOperationalHours(tenant.operationalHours) || "-"
   const services = formatServices(tenant.services) || "-"
 

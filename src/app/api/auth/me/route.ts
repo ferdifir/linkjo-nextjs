@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/prisma'
 import { getClaims } from '@/lib/auth'
+import { displayName } from '@/lib/display-name'
 
 export async function GET() {
   const claims = await getClaims()
@@ -18,7 +19,7 @@ export async function GET() {
       phone: user.phone,
       email: user.email,
       username: user.username || '',
-      name: user.name,
+      name: displayName(user.name, user.phone),
       tenant_id: user.tenantId,
       setup_completed: user.tenant.setupCompleted,
     },

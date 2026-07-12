@@ -1,10 +1,11 @@
 import type { Metadata } from "next"
 import { Toaster } from "@/components/ui/sonner"
 import { AuthProvider } from "@/contexts/auth-context"
+import { getPublicAppUrl } from "@/lib/public-url"
 import "./globals.css"
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://linkjo.co"),
+  metadataBase: new URL(getPublicAppUrl()),
   title: "Linkjo",
   description: "Manajemen Antrian Pintar",
 }

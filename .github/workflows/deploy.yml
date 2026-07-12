@@ -1,0 +1,103 @@
+name: Deploy
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "v*"
+
+concurrency:
+  group: production
+  cancel-in-progress: false
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: linkjo_ci
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d linkjo_ci"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/linkjo_ci?schema=public
+      JWT_SECRET: ci-jwt-secret
+      WA_WEBHOOK_SECRET: ci-webhook-secret
+      FONNTE_API_KEY: ci-fonnte-key
+      GROQ_API_KEY: ""
+      NEXT_PUBLIC_PUBLIC_APP_URL: http://127.0.0.1:3100
+      E2E_TEST_MODE: "1"
+      E2E_SKIP_NOTIFICATIONS: "1"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate Prisma client
+        run: npx prisma generate
+
+      - name: Apply database migrations
+        run: npx prisma migrate deploy
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Unit tests
+        run: npm run test
+
+      - name: Build
+        run: npm run build
+
+      - name: Install Playwright browser
+        run: npx playwright install --with-deps chromium
+
+      - name: E2E tests
+        run: npm run test:e2e
+
+      - name: Production dependency audit
+        run: npm audit --omit=dev --audit-level=high
+
+  deploy:
+    runs-on: ubuntu-latest
+    environment: production
+    needs: validate
+
+    env:
+      VPS_HOST: ${{ secrets.VPS_HOST || '109.111.53.58' }}
+      VPS_PORT: ${{ secrets.VPS_PORT || '38954' }}
+      VPS_USER: ${{ secrets.VPS_USER || 'root' }}
+      PRODUCTION_URL: ${{ secrets.PRODUCTION_URL || 'https://linkjo.my.id' }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure SSH
+        run: |
+          set -euo pipefail
+          mkdir -p ~/.ssh
+          printf '%s\n' "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -p "$VPS_PORT" "$VPS_HOST" >> ~/.ssh/known_hosts
+
+      - name: Deploy to VPS
+        run: scripts/deploy-vps.sh

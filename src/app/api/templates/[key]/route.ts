@@ -1,6 +1,6 @@
 import { prisma } from '@/lib/prisma'
 import { withRequiredClaims } from '@/lib/auth'
-import { DEFAULT_TEMPLATES } from '@/lib/notifications'
+import { DEFAULT_TEMPLATES } from '@/lib/message-templates'
 
 export async function PUT(req: Request, { params }: { params: Promise<{ key: string }> }) {
   return withRequiredClaims(async ({ tenant_id }) => {

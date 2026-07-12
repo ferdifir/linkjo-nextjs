@@ -13,6 +13,10 @@ export async function sendWA(
   message: string,
   options?: { typing?: boolean; countryCode?: string },
 ): Promise<{ success: boolean; error?: string }> {
+  if (process.env.E2E_SKIP_NOTIFICATIONS === "1") {
+    return { success: true }
+  }
+
   const token = getApiKey()
   if (!token) {
     return { success: false, error: "FONNTE_API_KEY not configured" }

@@ -10,6 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { CalendarClock, Clock3, Loader2, MapPin, MessageCircle, QrCode, Ticket } from "lucide-react"
 import { toast } from "sonner"
 import { PublicLocationMap } from "@/components/public-location-map"
+import { publicAppHost } from "@/lib/public-url"
 
 type TenantPublicProfile = {
   name: string
@@ -44,6 +45,7 @@ type BookingResult = {
 }
 
 export default function PublicTenantClient({ tenant }: { tenant: TenantPublicProfile }) {
+  const publicHost = publicAppHost()
   const [queueName, setQueueName] = useState("")
   const [queuePhone, setQueuePhone] = useState("")
   const [bookingName, setBookingName] = useState("")
@@ -91,7 +93,7 @@ export default function PublicTenantClient({ tenant }: { tenant: TenantPublicPro
     setLoadingBooking(true)
     setBookingResult(null)
     try {
-      const scheduledAt = bookingSchedule ? new Date(bookingSchedule).toISOString() : ""
+      const scheduledAt = toJakartaIsoString(bookingSchedule)
       const res = await fetch(`/api/public/${tenant.slug}/bookings`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -123,7 +125,7 @@ export default function PublicTenantClient({ tenant }: { tenant: TenantPublicPro
     e.preventDefault()
     setLoadingManage(true)
     try {
-      const scheduledAt = rescheduleAt ? new Date(rescheduleAt).toISOString() : ""
+      const scheduledAt = toJakartaIsoString(rescheduleAt)
       const res = await fetch(`/api/public/${tenant.slug}/bookings/${manageBookingId}/reschedule`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
@@ -174,7 +176,7 @@ export default function PublicTenantClient({ tenant }: { tenant: TenantPublicPro
       <header className="border-b border-white/5 bg-[#09090b]/95 px-4 py-4">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-4">
           <div>
-            <p className="font-mono text-[10px] font-medium uppercase tracking-widest text-emerald-400">linkjo.co/{tenant.slug}</p>
+            <p className="font-mono text-[10px] font-medium uppercase tracking-widest text-emerald-400">{publicHost}/{tenant.slug}</p>
             <h1 className="text-xl font-bold tracking-tight text-white">{tenant.name}</h1>
           </div>
           <div className="hidden items-center gap-2 rounded-lg border border-white/10 px-3 py-2 text-xs text-zinc-400 sm:flex">
@@ -206,13 +208,18 @@ export default function PublicTenantClient({ tenant }: { tenant: TenantPublicPro
               </CardHeader>
               <CardContent>
                 <form onSubmit={joinQueue} className="space-y-3">
+                  {tenant.operational_hours && (
+                    <div className="rounded-lg border border-white/5 bg-zinc-950/40 px-3 py-2 text-xs leading-relaxed text-zinc-400">
+                      Antrian hanya bisa diambil pada jam operasional: {tenant.operational_hours}
+                    </div>
+                  )}
                   <Field label="Nama">
                     <Input value={queueName} onChange={(e) => setQueueName(e.target.value)} required className="border-white/10 bg-zinc-950/60 text-white" />
                   </Field>
                   <Field label="Nomor WhatsApp">
                     <Input value={queuePhone} onChange={(e) => setQueuePhone(e.target.value)} required placeholder="6281234567890" className="border-white/10 bg-zinc-950/60 text-white placeholder:text-zinc-600" />
                   </Field>
-                  <Button className="w-full bg-emerald-400 font-bold text-zinc-950 hover:bg-emerald-400/90" disabled={loadingQueue}>
+                  <Button type="submit" className="w-full bg-emerald-400 font-bold text-zinc-950 hover:bg-emerald-400/90" disabled={loadingQueue}>
                     {loadingQueue ? <Loader2 className="size-4 animate-spin" /> : "Ambil Nomor"}
                   </Button>
                 </form>
@@ -256,11 +263,14 @@ export default function PublicTenantClient({ tenant }: { tenant: TenantPublicPro
                   </Field>
                   <Field label="Jadwal">
                     <Input type="datetime-local" value={bookingSchedule} onChange={(e) => setBookingSchedule(e.target.value)} required className="border-white/10 bg-zinc-950/60 text-white" />
+                    {tenant.operational_hours && (
+                      <p className="text-[10px] leading-relaxed text-zinc-500">Jam tersedia: {tenant.operational_hours}</p>
+                    )}
                   </Field>
                   <Field label="Catatan">
                     <Input value={bookingNotes} onChange={(e) => setBookingNotes(e.target.value)} className="border-white/10 bg-zinc-950/60 text-white" />
                   </Field>
-                  <Button className="w-full bg-emerald-400 font-bold text-zinc-950 hover:bg-emerald-400/90" disabled={loadingBooking}>
+                  <Button type="submit" className="w-full bg-emerald-400 font-bold text-zinc-950 hover:bg-emerald-400/90" disabled={loadingBooking}>
                     {loadingBooking ? <Loader2 className="size-4 animate-spin" /> : "Buat Booking"}
                   </Button>
                 </form>
@@ -293,9 +303,12 @@ export default function PublicTenantClient({ tenant }: { tenant: TenantPublicPro
                 </Field>
                 <Field label="Jadwal Baru">
                   <Input type="datetime-local" value={rescheduleAt} onChange={(e) => setRescheduleAt(e.target.value)} required className="border-white/10 bg-zinc-950/60 text-white" />
+                  {tenant.operational_hours && (
+                    <p className="text-[10px] leading-relaxed text-zinc-500">Jam tersedia: {tenant.operational_hours}</p>
+                  )}
                 </Field>
                 <div className="flex items-end">
-                  <Button className="w-full bg-emerald-400 font-bold text-zinc-950 hover:bg-emerald-400/90" disabled={loadingManage}>
+                  <Button type="submit" className="w-full bg-emerald-400 font-bold text-zinc-950 hover:bg-emerald-400/90" disabled={loadingManage}>
                     {loadingManage ? <Loader2 className="size-4 animate-spin" /> : "Ubah"}
                   </Button>
                 </div>
@@ -377,4 +390,9 @@ function Field({ label, children }: { label: string; children: ReactNode }) {
       {children}
     </div>
   )
+}
+
+function toJakartaIsoString(value: string) {
+  if (!value) return ""
+  return new Date(`${value}:00+07:00`).toISOString()
 }

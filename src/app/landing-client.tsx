@@ -8,6 +8,7 @@ import { Star, ShieldCheck, Monitor, Smartphone, BrainCircuit, ChevronRight, Loa
 import { useState, useEffect, useRef } from "react"
 import { validateSlug } from "@/lib/validation"
 import { useAuth } from "@/contexts/auth-context"
+import { publicAppHost } from "@/lib/public-url"
 
 const RESERVED_SLUG_KEY = "linkjo_reserved_slug"
 
@@ -73,6 +74,7 @@ export default function LandingPage() {
   const [availableSlug, setAvailableSlug] = useState("")
   const [showSignupDialog, setShowSignupDialog] = useState(false)
   const userInteracted = useRef(false)
+  const publicHost = publicAppHost()
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -108,7 +110,7 @@ export default function LandingPage() {
     }
 
     setCheckingSlug(true)
-    setSlugInfo(`Mengecek linkjo.co/${candidate}...`)
+    setSlugInfo(`Mengecek ${publicHost}/${candidate}...`)
 
     try {
       const res = await fetch(`/api/slugs/availability?slug=${encodeURIComponent(candidate)}`)
@@ -122,9 +124,9 @@ export default function LandingPage() {
       if (data.available) {
         setAvailableSlug(candidate)
         setShowSignupDialog(true)
-        setSlugInfo(`linkjo.co/${candidate} tersedia.`)
+        setSlugInfo(`${publicHost}/${candidate} tersedia.`)
       } else {
-        setSlugInfo(`linkjo.co/${candidate} sudah digunakan.`, "error")
+        setSlugInfo(`${publicHost}/${candidate} sudah digunakan.`, "error")
       }
     } catch {
       setSlugInfo("Gagal mengecek URL. Coba lagi.", "error")
@@ -244,7 +246,7 @@ export default function LandingPage() {
             </div>
             <div className="flex items-center justify-between gap-2 rounded-xl border border-white/5 bg-zinc-900/40 p-2.5 shadow-lg transition-all focus-within:border-emerald-400/30 focus-within:ring-1 focus-within:ring-emerald-400/20 md:rounded-2xl md:p-2.5">
               <div className="flex min-w-0 flex-1 items-center pl-1">
-                <span className="font-mono text-xs font-medium text-emerald-400 select-none md:text-xs">linkjo.co/</span>
+                <span className="font-mono text-xs font-medium text-emerald-400 select-none md:text-xs">{publicHost}/</span>
                 <input
                   id="business-slug"
                   type="text"
@@ -336,7 +338,7 @@ export default function LandingPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4 backdrop-blur-sm">
           <div className="w-full max-w-md rounded-2xl border border-white/10 bg-zinc-950 p-5 shadow-2xl shadow-emerald-500/10">
             <div className="space-y-2">
-              <p className="font-mono text-xs font-medium text-emerald-400">linkjo.co/{availableSlug}</p>
+              <p className="font-mono text-xs font-medium text-emerald-400">{publicHost}/{availableSlug}</p>
               <div className="flex items-center gap-2">
                 <CheckCircle2 className="size-4 text-emerald-400" />
                 <h2 className="text-lg font-bold tracking-tight text-white">URL ini tersedia</h2>
@@ -352,7 +354,7 @@ export default function LandingPage() {
                 </div>
                 <div className="min-w-0">
                   <p className="truncate text-sm font-bold text-white">{formatBusinessName(availableSlug) || "Nama Bisnis"}</p>
-                  <p className="text-xs text-zinc-500">linkjo.co/{availableSlug}</p>
+                  <p className="text-xs text-zinc-500">{publicHost}/{availableSlug}</p>
                 </div>
               </div>
               <div className="mb-3 rounded-lg border border-emerald-400/15 bg-emerald-400/5 px-3 py-2">

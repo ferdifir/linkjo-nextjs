@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma"
 import { notifyQueueCreated } from "@/lib/notifications"
 import { createQueueEntry } from "@/lib/queue"
+import { isWithinOperationalHours } from "@/lib/operational-hours"
 import { normalizePhone, SLUG_PATTERN } from "@/lib/validation"
 import { checkRateLimit, clientIp, rateLimitResponse } from "@/lib/rate-limit"
 
@@ -12,7 +13,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ slug: s
 
   const tenant = await prisma.tenant.findUnique({
     where: { slug },
-    select: { id: true, setupCompleted: true },
+    select: { id: true, setupCompleted: true, operationalHours: true },
   })
   if (!tenant || !tenant.setupCompleted) {
     return Response.json({ error: "tenant tidak ditemukan" }, { status: 404 })
@@ -20,6 +21,9 @@ export async function POST(req: Request, { params }: { params: Promise<{ slug: s
 
   try {
     const body = await req.json()
+    if (tenant.operationalHours && !isWithinOperationalHours(new Date(), tenant.operationalHours)) {
+      return Response.json({ error: "antrian hanya bisa diambil pada jam operasional" }, { status: 400 })
+    }
     const ipLimit = await checkRateLimit({ key: `public-queue:ip:${tenant.id}:${clientIp(req)}`, limit: 20, windowMs: 60 * 60 * 1000 })
     if (!ipLimit.allowed) return rateLimitResponse(ipLimit.resetAt)
     const phone = normalizePhone(body.phone)

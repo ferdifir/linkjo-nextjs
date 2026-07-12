@@ -1,6 +1,8 @@
 import { prisma } from '@/lib/prisma'
 import { getClaims } from '@/lib/auth'
 import { normalizeServiceInputs } from '@/lib/services'
+import { normalizeOperationalHoursConfig } from '@/lib/operational-hours'
+import { displayName } from '@/lib/display-name'
 
 export async function GET() {
   const claims = await getClaims()
@@ -29,13 +31,14 @@ export async function GET() {
     return Response.json({ error: 'Tenant not found' }, { status: 404 })
   }
 
-  return Response.json({
-    name: tenant.name,
-    slug: tenant.slug,
-    description: tenant.description,
-    latitude: tenant.latitude,
-    longitude: tenant.longitude,
-    operational_hours: tenant.operationalHours,
+    return Response.json({
+      name: tenant.name,
+      slug: tenant.slug,
+      description: tenant.description,
+      owner_name: await getTenantOwnerName(claims.user_id),
+      latitude: tenant.latitude,
+      longitude: tenant.longitude,
+      operational_hours: tenant.operationalHours,
     services: tenant.services.map(serializeService),
     setup_completed: tenant.setupCompleted,
   })
@@ -47,10 +50,13 @@ export async function PUT(req: Request) {
     return Response.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const { name, description, latitude, longitude, operational_hours, services } = await req.json()
+  const { name, owner_name, description, latitude, longitude, operational_hours, services } = await req.json()
 
   if (!name?.trim()) {
     return Response.json({ error: 'nama bisnis harus diisi' }, { status: 400 })
+  }
+  if (!owner_name?.trim()) {
+    return Response.json({ error: 'nama akun harus diisi' }, { status: 400 })
   }
 
   const normalizedServices = normalizeServiceInputs(services)
@@ -64,7 +70,7 @@ export async function PUT(req: Request) {
 
   let operationalHours = ''
   try {
-    operationalHours = normalizeOperationalHours(operational_hours)
+    operationalHours = normalizeOperationalHoursConfig(operational_hours)
   } catch {
     return Response.json({ error: 'jam operasional tidak valid' }, { status: 400 })
   }
@@ -91,17 +97,50 @@ export async function PUT(req: Request) {
       },
     })
 
-    await tx.service.deleteMany({ where: { tenantId: claims.tenant_id } })
-    await tx.service.createMany({
-      data: normalizedServices.map((service, index) => ({
+    const existingServices = await tx.service.findMany({
+      where: { tenantId: claims.tenant_id },
+      select: { id: true },
+    })
+    const existingIds = new Set(existingServices.map((service) => service.id))
+    const submittedExistingIds = new Set(normalizedServices
+      .map((service) => service.id)
+      .filter((id): id is string => Boolean(id && existingIds.has(id))))
+
+    await tx.service.deleteMany({
+      where: {
         tenantId: claims.tenant_id,
+        id: { notIn: Array.from(submittedExistingIds) },
+      },
+    })
+
+    await Promise.all(normalizedServices.map((service, index) => {
+      const data = {
         name: service.name,
         description: service.description,
         durationMinutes: service.duration_minutes,
         price: service.price,
         active: service.active,
         sortOrder: index,
-      })),
+      }
+
+      if (service.id && existingIds.has(service.id)) {
+        return tx.service.update({
+          where: { id: service.id },
+          data,
+        })
+      }
+
+      return tx.service.create({
+        data: {
+          tenantId: claims.tenant_id,
+          ...data,
+        },
+      })
+    }))
+
+    await tx.user.update({
+      where: { id: claims.user_id },
+      data: { name: owner_name.trim() },
     })
 
     const updatedServices = await tx.service.findMany({
@@ -117,12 +156,21 @@ export async function PUT(req: Request) {
     name: tenant.name,
     slug: tenant.slug,
     description: tenant.description,
+    owner_name: await getTenantOwnerName(claims.user_id),
     latitude: tenant.latitude,
     longitude: tenant.longitude,
     operational_hours: tenant.operationalHours,
     services: tenant.services.map(serializeService),
     setup_completed: tenant.setupCompleted,
   })
+}
+
+async function getTenantOwnerName(userId: string) {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { name: true, phone: true },
+  })
+  return displayName(user?.name || "", user?.phone || "")
 }
 
 function normalizeLocation(latitude: unknown, longitude: unknown): { latitude: number | null; longitude: number | null; error?: string } {
@@ -138,15 +186,6 @@ function normalizeLocation(latitude: unknown, longitude: unknown): { latitude: n
     return { latitude: null, longitude: null, error: 'longitude tidak valid' }
   }
   return { latitude: lat, longitude: lng }
-}
-
-function normalizeOperationalHours(input: unknown) {
-  if (input === undefined || input === null || input === '') return ''
-  if (typeof input === 'string') {
-    JSON.parse(input)
-    return input
-  }
-  return JSON.stringify(input)
 }
 
 function serializeService(service: {

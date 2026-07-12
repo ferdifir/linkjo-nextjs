@@ -63,33 +63,42 @@ export function ServicesEditor({
         {services.map((service, index) => (
           <div key={index} className="rounded-lg border border-white/5 bg-zinc-950/40 p-3">
             <div className="grid gap-2 sm:grid-cols-[1fr_112px_120px_auto]">
-              <Input
-                value={service.name}
-                onChange={(event) => update(index, { name: event.target.value })}
-                placeholder="Nama layanan"
-                className="h-9 border-white/10 bg-zinc-950/60 text-sm text-white placeholder:text-zinc-600"
-              />
-              <Input
-                type="number"
-                min={1}
-                max={1440}
-                value={service.duration_minutes}
-                onChange={(event) => update(index, { duration_minutes: Number(event.target.value) || 30 })}
-                className="h-9 border-white/10 bg-zinc-950/60 text-sm text-white"
-              />
-              <Input
-                type="number"
-                min={0}
-                value={service.price ?? ""}
-                onChange={(event) => update(index, { price: event.target.value ? Number(event.target.value) : null })}
-                placeholder="Harga"
-                className="h-9 border-white/10 bg-zinc-950/60 text-sm text-white placeholder:text-zinc-600"
-              />
+              <div className="space-y-1">
+                <Label className="text-[10px] text-zinc-500">Nama layanan</Label>
+                <Input
+                  value={service.name}
+                  onChange={(event) => update(index, { name: event.target.value })}
+                  placeholder="Contoh: Potong rambut"
+                  className="h-9 border-white/10 bg-zinc-950/60 text-sm text-white placeholder:text-zinc-600"
+                />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-[10px] text-zinc-500">Durasi (menit)</Label>
+                <Input
+                  type="number"
+                  min={1}
+                  max={1440}
+                  value={service.duration_minutes}
+                  onChange={(event) => update(index, { duration_minutes: Number(event.target.value) || 30 })}
+                  className="h-9 border-white/10 bg-zinc-950/60 text-sm text-white"
+                />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-[10px] text-zinc-500">Harga</Label>
+                <Input
+                  type="number"
+                  min={0}
+                  value={service.price ?? ""}
+                  onChange={(event) => update(index, { price: event.target.value ? Number(event.target.value) : null })}
+                  placeholder="Opsional"
+                  className="h-9 border-white/10 bg-zinc-950/60 text-sm text-white placeholder:text-zinc-600"
+                />
+              </div>
               <Button
                 type="button"
                 variant="ghost"
                 size="icon"
-                className="text-red-400 hover:bg-red-500/10"
+                className="self-end text-red-400 hover:bg-red-500/10"
                 onClick={() => remove(index)}
               >
                 <Trash2 className="size-4" />

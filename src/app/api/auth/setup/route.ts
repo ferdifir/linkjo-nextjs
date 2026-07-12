@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/prisma'
 import { signToken, setTokenCookie, withRequiredClaims } from '@/lib/auth'
 import { validateSlug } from '@/lib/validation'
+import { displayName } from '@/lib/display-name'
 
 export async function POST(req: Request) {
   return withRequiredClaims(async (claims) => {
@@ -48,7 +49,7 @@ export async function POST(req: Request) {
         phone: user.phone,
         email: user.email,
         username: user.username || '',
-        name: user.name,
+        name: displayName(user.name, user.phone),
         tenant_id: user.tenantId,
         setup_completed: user.tenant.setupCompleted,
       },

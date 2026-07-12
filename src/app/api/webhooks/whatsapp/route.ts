@@ -4,11 +4,13 @@ import { cleanText, normalizePhone, SLUG_PATTERN } from "@/lib/validation"
 import { checkRateLimit, clientIp, rateLimitResponse } from "@/lib/rate-limit"
 
 export async function POST(req: Request) {
+  const url = new URL(req.url)
   const secret = process.env.WA_WEBHOOK_SECRET
   if (!secret && process.env.NODE_ENV === "production") {
     return Response.json({ error: "WA_WEBHOOK_SECRET must be configured" }, { status: 500 })
   }
-  if (secret && req.headers.get("x-webhook-secret") !== secret) {
+  const providedSecret = req.headers.get("x-webhook-secret") || url.searchParams.get("secret")
+  if (secret && providedSecret !== secret) {
     return Response.json({ error: "Unauthorized" }, { status: 401 })
   }
 
@@ -16,7 +18,6 @@ export async function POST(req: Request) {
   if (!ipLimit.allowed) return rateLimitResponse(ipLimit.resetAt)
 
   const body = await req.json()
-  const url = new URL(req.url)
   const tenantSlug = cleanText(
     body.tenant_slug ?? body.tenantSlug ?? body.slug ?? url.searchParams.get("tenant"),
     50,

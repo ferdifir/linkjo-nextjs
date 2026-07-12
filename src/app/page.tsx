@@ -1,4 +1,5 @@
 import type { Metadata } from "next"
+import { getPublicAppUrl } from "@/lib/public-url"
 import LandingPage from "./landing-client"
 
 const title = "Linkjo - Sistem Antrean dan Booking via WhatsApp"
@@ -41,13 +42,14 @@ export const metadata: Metadata = {
 }
 
 export default function Page() {
+  const publicAppUrl = getPublicAppUrl()
   const structuredData = {
     "@context": "https://schema.org",
     "@type": "SoftwareApplication",
     name: "Linkjo",
     applicationCategory: "BusinessApplication",
     operatingSystem: "Web",
-    url: "https://linkjo.co",
+    url: publicAppUrl,
     description,
     offers: {
       "@type": "Offer",

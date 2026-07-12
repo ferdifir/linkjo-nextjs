@@ -36,7 +36,7 @@ export function normalizeServiceInput(input: ServiceInput): (Omit<ServiceSummary
     : Number(input.price)
 
   return {
-    id: typeof input.id === "string" && input.id.startsWith("svc_") ? input.id : undefined,
+    id: typeof input.id === "string" && input.id.trim() ? input.id.trim() : undefined,
     name,
     description: cleanText(input.description, 200),
     duration_minutes: Number.isSafeInteger(duration) && duration > 0 && duration <= 1440 ? duration : 30,
