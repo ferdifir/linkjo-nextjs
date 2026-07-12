@@ -16,7 +16,7 @@ const RESERVED_SLUG_KEY = "linkjo_reserved_slug"
 
 export default function AuthPage() {
   const router = useRouter()
-  const { user, loading: authLoading, requestOTP, verifyOTP, setup } = useAuth()
+  const { user, loading: authLoading, requestOTP, verifyOTP, claimUsername } = useAuth()
   const [step, setStep] = useState<Step>("phone")
   const [phone, setPhone] = useState("")
   const [code, setCode] = useState("")
@@ -112,7 +112,7 @@ export default function AuthPage() {
     }
     setLoading(true)
     try {
-      await setup(slug)
+      await claimUsername(slug)
       localStorage.removeItem(RESERVED_SLUG_KEY)
       router.replace("/onboarding")
     } catch (err) {

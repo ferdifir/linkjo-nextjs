@@ -1,7 +1,7 @@
-import { prisma } from '@/lib/prisma'
-import { signToken, setTokenCookie, withRequiredClaims } from '@/lib/auth'
-import { validateSlug } from '@/lib/validation'
-import { displayName } from '@/lib/display-name'
+import { prisma } from "@/lib/prisma"
+import { signToken, setTokenCookie, withRequiredClaims } from "@/lib/auth"
+import { validateSlug } from "@/lib/validation"
+import { displayName } from "@/lib/display-name"
 
 export async function POST(req: Request) {
   return withRequiredClaims(async (claims) => {
@@ -20,14 +20,14 @@ export async function POST(req: Request) {
       }),
     ])
     if (userExists > 0 || tenantExists > 0) {
-      return Response.json({ error: 'username sudah dipakai' }, { status: 409 })
+      return Response.json({ error: "username sudah dipakai" }, { status: 409 })
     }
 
     const targetUser = await prisma.user.findFirst({
       where: { id: claims.user_id, username: null },
     })
     if (!targetUser) {
-      return Response.json({ error: 'username already set' }, { status: 409 })
+      return Response.json({ error: "username already set" }, { status: 409 })
     }
 
     await prisma.user.update({
@@ -48,7 +48,7 @@ export async function POST(req: Request) {
         id: user.id,
         phone: user.phone,
         email: user.email,
-        username: user.username || '',
+        username: user.username || "",
         name: displayName(user.name, user.phone),
         tenant_id: user.tenantId,
         setup_completed: user.tenant.setupCompleted,

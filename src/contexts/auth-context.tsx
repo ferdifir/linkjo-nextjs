@@ -18,7 +18,7 @@ type AuthContextType = {
   loading: boolean
   requestOTP: (phone: string) => Promise<void>
   verifyOTP: (phone: string, code: string) => Promise<{ needs_setup: boolean; setup_completed: boolean }>
-  setup: (username: string) => Promise<void>
+  claimUsername: (username: string) => Promise<void>
   logout: () => Promise<void>
 }
 
@@ -64,8 +64,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return { needs_setup: res.needs_setup, setup_completed: res.user.setup_completed }
   }, [])
 
-  const setup = useCallback(async (username: string) => {
-    const res = await api<{ user: User }>("/auth/setup", {
+  const claimUsername = useCallback(async (username: string) => {
+    const res = await api<{ user: User }>("/auth/username", {
       method: "POST",
       body: JSON.stringify({ username }),
     })
@@ -78,7 +78,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [])
 
   return (
-    <AuthContext.Provider value={{ user, loading, requestOTP, verifyOTP, setup, logout }}>
+    <AuthContext.Provider value={{ user, loading, requestOTP, verifyOTP, claimUsername, logout }}>
       {children}
     </AuthContext.Provider>
   )

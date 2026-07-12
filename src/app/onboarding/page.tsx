@@ -17,7 +17,7 @@ import { MessageTemplatesEditor } from "@/components/message-templates-editor"
 import { defaultMessageTemplates, missingTemplateVariables, type MessageTemplate } from "@/lib/message-templates"
 import { publicTenantUrl } from "@/lib/public-url"
 
-export default function SetupPage() {
+export default function OnboardingPage() {
   const router = useRouter()
   const { user } = useAuth()
   const [ownerName, setOwnerName] = useState("")
