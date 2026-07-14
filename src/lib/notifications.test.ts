@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest"
 import { missingTemplateVariables, requiredTemplateVariables } from "./message-templates"
 import { applyTemplate } from "./notifications"
-import { findMatchingService, formatServices } from "./services"
+import { findMatchingService, formatServices, resolveServiceMatch } from "./services"
 
 describe("notification templates", () => {
   it("replaces known variables and leaves unknown variables intact", () => {
@@ -14,6 +14,11 @@ describe("notification templates", () => {
       "{service}",
       "{scheduled_at}",
       "{public_token}",
+    ])
+    expect(requiredTemplateVariables("booking_confirmed")).toEqual([
+      "{booking_id}",
+      "{service}",
+      "{scheduled_at}",
     ])
     expect(missingTemplateVariables("booking_created", "Booking {booking_id} untuk {service}")).toEqual([
       "{scheduled_at}",
@@ -31,5 +36,18 @@ describe("service helpers", () => {
   it("matches customer text to active service names", () => {
     const services = [{ id: "svc_1", name: "Hair Coloring" }]
     expect(findMatchingService(services, "booking coloring")?.id).toBe("svc_1")
+  })
+
+  it("does not pick a service when the customer text is ambiguous", () => {
+    const services = [
+      { id: "svc_1", name: "Hair Coloring" },
+      { id: "svc_2", name: "Hair Treatment" },
+    ]
+
+    expect(findMatchingService(services, "booking hair")).toBeNull()
+    const match = resolveServiceMatch(services, "booking hair")
+    expect(match.status).toBe("ambiguous")
+    expect(match.status === "ambiguous" ? match.services.map((service) => service.id).sort() : [])
+      .toEqual(["svc_1", "svc_2"])
   })
 })

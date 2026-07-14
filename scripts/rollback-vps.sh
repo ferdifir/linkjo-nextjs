@@ -3,9 +3,9 @@ set -euo pipefail
 
 APP_NAME=${APP_NAME:-linkjo-next}
 APP_PORT=${APP_PORT:-3100}
-VPS_HOST=${VPS_HOST:-109.111.53.58}
-VPS_PORT=${VPS_PORT:-38954}
-VPS_USER=${VPS_USER:-root}
+VPS_HOST=${VPS_HOST:?VPS_HOST must be set}
+VPS_PORT=${VPS_PORT:?VPS_PORT must be set}
+VPS_USER=${VPS_USER:?VPS_USER must be set}
 REMOTE_ROOT=${REMOTE_ROOT:-/var/www/linkjo-next}
 TARGET_RELEASE=${1:-}
 

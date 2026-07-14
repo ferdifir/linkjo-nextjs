@@ -1,9 +1,10 @@
 import { prisma } from '@/lib/prisma'
 import { withRequiredClaims } from '@/lib/auth'
 import { DEFAULT_TEMPLATES } from '@/lib/message-templates'
+import { auditEvent } from '@/lib/audit'
 
 export async function PUT(req: Request, { params }: { params: Promise<{ key: string }> }) {
-  return withRequiredClaims(async ({ tenant_id }) => {
+  return withRequiredClaims(async ({ tenant_id, user_id }) => {
     const { key } = await params
     if (!DEFAULT_TEMPLATES[key]) {
       return Response.json({ error: 'template tidak dikenal' }, { status: 400 })
@@ -17,6 +18,15 @@ export async function PUT(req: Request, { params }: { params: Promise<{ key: str
       where: { tenantId_key: { tenantId: tenant_id, key } },
       update: { value },
       create: { tenantId: tenant_id, key, value },
+    })
+    await auditEvent({
+      tenantId: tenant_id,
+      actorType: "owner",
+      actorIdentifier: user_id,
+      action: "template.update",
+      resourceType: "template",
+      resourceId: key,
+      metadata: { length: value.length },
     })
 
     return Response.json({ key, value })

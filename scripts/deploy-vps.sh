@@ -3,11 +3,11 @@ set -euo pipefail
 
 APP_NAME=${APP_NAME:-linkjo-next}
 APP_PORT=${APP_PORT:-3100}
-VPS_HOST=${VPS_HOST:-109.111.53.58}
-VPS_PORT=${VPS_PORT:-38954}
-VPS_USER=${VPS_USER:-root}
+VPS_HOST=${VPS_HOST:?VPS_HOST must be set}
+VPS_PORT=${VPS_PORT:?VPS_PORT must be set}
+VPS_USER=${VPS_USER:?VPS_USER must be set}
 REMOTE_ROOT=${REMOTE_ROOT:-/var/www/linkjo-next}
-PRODUCTION_URL=${PRODUCTION_URL:-https://linkjo.my.id}
+PRODUCTION_URL=${PRODUCTION_URL:?PRODUCTION_URL must be set}
 
 LOCAL_ROOT=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
 COMMIT_SHA=${GITHUB_SHA:-$(git -C "$LOCAL_ROOT" rev-parse HEAD 2>/dev/null || date -u +%Y%m%d%H%M%S)}

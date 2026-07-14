@@ -60,22 +60,81 @@ export function formatServices(services: Array<{ name: string; durationMinutes?:
 }
 
 export function findMatchingService<T extends { name: string }>(services: T[], requested: string): T | null {
-  const normalizedRequested = normalizeComparable(requested)
-  if (!normalizedRequested) return null
+  const match = resolveServiceMatch(services, requested)
+  return match.status === "matched" ? match.service : null
+}
 
-  const requestedTokens = new Set(normalizedRequested.split(" ").filter(Boolean))
-  return services.find((service) => {
-    const normalizedName = normalizeComparable(service.name)
-    const nameTokens = normalizedName.split(" ").filter(Boolean)
-    return normalizedRequested === normalizedName ||
-      normalizedRequested.includes(normalizedName) ||
-      normalizedName.includes(normalizedRequested) ||
-      nameTokens.some((token) => requestedTokens.has(token))
-  }) || null
+export type ServiceMatchResult<T> =
+  | { status: "matched"; service: T }
+  | { status: "ambiguous"; services: T[] }
+  | { status: "not_found" }
+
+export function resolveServiceMatch<T extends { name: string }>(services: T[], requested: string): ServiceMatchResult<T> {
+  const normalizedRequested = normalizeComparable(requested)
+  const requestedTokens = tokenSet(normalizedRequested)
+  if (!normalizedRequested || requestedTokens.size === 0) return { status: "not_found" }
+
+  const candidates = services
+    .map((service) => ({
+      service,
+      normalizedName: normalizeComparable(service.name),
+    }))
+    .map((candidate) => ({
+      ...candidate,
+      score: serviceMatchScore(normalizedRequested, requestedTokens, candidate.normalizedName),
+    }))
+    .filter((candidate) => candidate.score > 0)
+    .sort((a, b) => b.score - a.score || b.normalizedName.length - a.normalizedName.length)
+
+  if (candidates.length === 0) return { status: "not_found" }
+
+  const [best, second] = candidates
+  if (second && second.score === best.score) {
+    return {
+      status: "ambiguous",
+      services: candidates.filter((candidate) => candidate.score === best.score).map((candidate) => candidate.service),
+    }
+  }
+
+  return { status: "matched", service: best.service }
 }
 
 function normalizeComparable(value: string) {
   return value.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim()
+}
+
+const SERVICE_STOP_WORDS = new Set([
+  "booking",
+  "reservasi",
+  "jadwal",
+  "layanan",
+  "service",
+  "untuk",
+  "mau",
+  "ingin",
+  "saya",
+  "tolong",
+])
+
+function tokenSet(value: string) {
+  return new Set(value.split(" ").filter((token) => token && !SERVICE_STOP_WORDS.has(token)))
+}
+
+function serviceMatchScore(normalizedRequested: string, requestedTokens: Set<string>, normalizedName: string) {
+  if (!normalizedName) return 0
+  const nameTokens = tokenSet(normalizedName)
+  if (nameTokens.size === 0) return 0
+
+  if (normalizedRequested === normalizedName) return 1000
+  if (normalizedRequested.includes(normalizedName)) return 800 + nameTokens.size
+  if (normalizedName.includes(normalizedRequested)) return 700 + requestedTokens.size
+
+  const common = Array.from(nameTokens).filter((token) => requestedTokens.has(token)).length
+  if (common === 0) return 0
+
+  return common * 100 +
+    (common / requestedTokens.size) * 10 +
+    (common / nameTokens.size) * 10
 }
 
 function formatRupiah(value: number) {

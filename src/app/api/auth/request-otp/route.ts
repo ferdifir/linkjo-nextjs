@@ -5,6 +5,7 @@ import { randomUUID } from 'crypto'
 import { normalizePhone } from '@/lib/validation'
 import { checkRateLimit, clientIp, rateLimitResponse } from '@/lib/rate-limit'
 import { createOwnerVerificationIntent } from '@/lib/whatsapp-intents'
+import { logger, maskPhone } from '@/lib/logger'
 
 export async function POST(req: Request) {
   const body = await req.json()
@@ -49,7 +50,11 @@ export async function POST(req: Request) {
 
   const result = await sendWA(phone, `Kode OTP Linkjo kamu: ${code}. Berlaku 5 menit.`)
   if (!result.success) {
-    console.error(`Gagal kirim OTP ke ${phone}: ${result.error}`)
+    logger.warn({
+      event: "auth.otp.send_failed",
+      phone: maskPhone(phone),
+      reason: result.error,
+    })
     await prisma.otpCode.deleteMany({ where: { id: otpId } })
     return Response.json({ error: 'gagal mengirim OTP via WhatsApp' }, { status: 502 })
   }

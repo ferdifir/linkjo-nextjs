@@ -87,23 +87,22 @@ Customers do not log in. They enter their name and WhatsApp number to receive qu
 Inbound webhook endpoint:
 
 ```text
-POST /api/webhooks/whatsapp?tenant={tenant-slug}
+POST /api/webhooks/whatsapp?secret=<secret>
 ```
 
 Accepted JSON fields are intentionally flexible:
 
 ```json
 {
-  "tenant_slug": "nama-bisnis",
   "from": "6281234567890",
   "message": "ambil antrian nama saya Budi"
 }
 ```
 
-Fonnte sends inbound payload fields such as `sender`, `message`, `name`, `location`, and `inboxid`. Configure one webhook URL per tenant and include the tenant slug plus webhook secret in the URL:
+Fonnte sends inbound payload fields such as `sender`, `message`, `name`, `location`, and `inboxid`. Configure one global webhook URL in Fonnte:
 
 ```text
-POST /api/webhooks/whatsapp?tenant={tenant-slug}&secret=<secret>
+https://linkjo.my.id/api/webhooks/whatsapp?secret=<secret>
 ```
 
 If the webhook provider supports custom headers, the secret can also be sent as:
@@ -111,6 +110,8 @@ If the webhook provider supports custom headers, the secret can also be sent as:
 ```text
 x-webhook-secret: <secret>
 ```
+
+Do not configure one webhook URL per tenant. Tenant routing for WhatsApp replies uses trusted Linkjo context such as inbound verification intents and stored customer conversation state from prior Linkjo notifications.
 
 Supported commands include taking a queue number, checking queue status, canceling an active queue, and creating a booking with:
 

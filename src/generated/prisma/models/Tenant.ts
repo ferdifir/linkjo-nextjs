@@ -260,6 +260,7 @@ export type TenantWhereInput = {
   templates?: Prisma.TemplateListRelationFilter
   whatsappIntents?: Prisma.WhatsappIntentListRelationFilter
   whatsappConversationStates?: Prisma.WhatsappConversationStateListRelationFilter
+  auditEvents?: Prisma.AuditEventListRelationFilter
 }
 
 export type TenantOrderByWithRelationInput = {
@@ -280,6 +281,7 @@ export type TenantOrderByWithRelationInput = {
   templates?: Prisma.TemplateOrderByRelationAggregateInput
   whatsappIntents?: Prisma.WhatsappIntentOrderByRelationAggregateInput
   whatsappConversationStates?: Prisma.WhatsappConversationStateOrderByRelationAggregateInput
+  auditEvents?: Prisma.AuditEventOrderByRelationAggregateInput
 }
 
 export type TenantWhereUniqueInput = Prisma.AtLeast<{
@@ -303,6 +305,7 @@ export type TenantWhereUniqueInput = Prisma.AtLeast<{
   templates?: Prisma.TemplateListRelationFilter
   whatsappIntents?: Prisma.WhatsappIntentListRelationFilter
   whatsappConversationStates?: Prisma.WhatsappConversationStateListRelationFilter
+  auditEvents?: Prisma.AuditEventListRelationFilter
 }, "id" | "slug">
 
 export type TenantOrderByWithAggregationInput = {
@@ -355,6 +358,7 @@ export type TenantCreateInput = {
   templates?: Prisma.TemplateCreateNestedManyWithoutTenantInput
   whatsappIntents?: Prisma.WhatsappIntentCreateNestedManyWithoutTenantInput
   whatsappConversationStates?: Prisma.WhatsappConversationStateCreateNestedManyWithoutTenantInput
+  auditEvents?: Prisma.AuditEventCreateNestedManyWithoutTenantInput
 }
 
 export type TenantUncheckedCreateInput = {
@@ -375,6 +379,7 @@ export type TenantUncheckedCreateInput = {
   templates?: Prisma.TemplateUncheckedCreateNestedManyWithoutTenantInput
   whatsappIntents?: Prisma.WhatsappIntentUncheckedCreateNestedManyWithoutTenantInput
   whatsappConversationStates?: Prisma.WhatsappConversationStateUncheckedCreateNestedManyWithoutTenantInput
+  auditEvents?: Prisma.AuditEventUncheckedCreateNestedManyWithoutTenantInput
 }
 
 export type TenantUpdateInput = {
@@ -395,6 +400,7 @@ export type TenantUpdateInput = {
   templates?: Prisma.TemplateUpdateManyWithoutTenantNestedInput
   whatsappIntents?: Prisma.WhatsappIntentUpdateManyWithoutTenantNestedInput
   whatsappConversationStates?: Prisma.WhatsappConversationStateUpdateManyWithoutTenantNestedInput
+  auditEvents?: Prisma.AuditEventUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantUncheckedUpdateInput = {
@@ -415,6 +421,7 @@ export type TenantUncheckedUpdateInput = {
   templates?: Prisma.TemplateUncheckedUpdateManyWithoutTenantNestedInput
   whatsappIntents?: Prisma.WhatsappIntentUncheckedUpdateManyWithoutTenantNestedInput
   whatsappConversationStates?: Prisma.WhatsappConversationStateUncheckedUpdateManyWithoutTenantNestedInput
+  auditEvents?: Prisma.AuditEventUncheckedUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantCreateManyInput = {
@@ -617,6 +624,22 @@ export type TenantUpdateOneRequiredWithoutTemplatesNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.TenantUpdateToOneWithWhereWithoutTemplatesInput, Prisma.TenantUpdateWithoutTemplatesInput>, Prisma.TenantUncheckedUpdateWithoutTemplatesInput>
 }
 
+export type TenantCreateNestedOneWithoutAuditEventsInput = {
+  create?: Prisma.XOR<Prisma.TenantCreateWithoutAuditEventsInput, Prisma.TenantUncheckedCreateWithoutAuditEventsInput>
+  connectOrCreate?: Prisma.TenantCreateOrConnectWithoutAuditEventsInput
+  connect?: Prisma.TenantWhereUniqueInput
+}
+
+export type TenantUpdateOneWithoutAuditEventsNestedInput = {
+  create?: Prisma.XOR<Prisma.TenantCreateWithoutAuditEventsInput, Prisma.TenantUncheckedCreateWithoutAuditEventsInput>
+  connectOrCreate?: Prisma.TenantCreateOrConnectWithoutAuditEventsInput
+  upsert?: Prisma.TenantUpsertWithoutAuditEventsInput
+  disconnect?: Prisma.TenantWhereInput | boolean
+  delete?: Prisma.TenantWhereInput | boolean
+  connect?: Prisma.TenantWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.TenantUpdateToOneWithWhereWithoutAuditEventsInput, Prisma.TenantUpdateWithoutAuditEventsInput>, Prisma.TenantUncheckedUpdateWithoutAuditEventsInput>
+}
+
 export type TenantCreateNestedOneWithoutWhatsappIntentsInput = {
   create?: Prisma.XOR<Prisma.TenantCreateWithoutWhatsappIntentsInput, Prisma.TenantUncheckedCreateWithoutWhatsappIntentsInput>
   connectOrCreate?: Prisma.TenantCreateOrConnectWithoutWhatsappIntentsInput
@@ -664,6 +687,7 @@ export type TenantCreateWithoutUsersInput = {
   templates?: Prisma.TemplateCreateNestedManyWithoutTenantInput
   whatsappIntents?: Prisma.WhatsappIntentCreateNestedManyWithoutTenantInput
   whatsappConversationStates?: Prisma.WhatsappConversationStateCreateNestedManyWithoutTenantInput
+  auditEvents?: Prisma.AuditEventCreateNestedManyWithoutTenantInput
 }
 
 export type TenantUncheckedCreateWithoutUsersInput = {
@@ -683,6 +707,7 @@ export type TenantUncheckedCreateWithoutUsersInput = {
   templates?: Prisma.TemplateUncheckedCreateNestedManyWithoutTenantInput
   whatsappIntents?: Prisma.WhatsappIntentUncheckedCreateNestedManyWithoutTenantInput
   whatsappConversationStates?: Prisma.WhatsappConversationStateUncheckedCreateNestedManyWithoutTenantInput
+  auditEvents?: Prisma.AuditEventUncheckedCreateNestedManyWithoutTenantInput
 }
 
 export type TenantCreateOrConnectWithoutUsersInput = {
@@ -718,6 +743,7 @@ export type TenantUpdateWithoutUsersInput = {
   templates?: Prisma.TemplateUpdateManyWithoutTenantNestedInput
   whatsappIntents?: Prisma.WhatsappIntentUpdateManyWithoutTenantNestedInput
   whatsappConversationStates?: Prisma.WhatsappConversationStateUpdateManyWithoutTenantNestedInput
+  auditEvents?: Prisma.AuditEventUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantUncheckedUpdateWithoutUsersInput = {
@@ -737,6 +763,7 @@ export type TenantUncheckedUpdateWithoutUsersInput = {
   templates?: Prisma.TemplateUncheckedUpdateManyWithoutTenantNestedInput
   whatsappIntents?: Prisma.WhatsappIntentUncheckedUpdateManyWithoutTenantNestedInput
   whatsappConversationStates?: Prisma.WhatsappConversationStateUncheckedUpdateManyWithoutTenantNestedInput
+  auditEvents?: Prisma.AuditEventUncheckedUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantCreateWithoutAntrianInput = {
@@ -756,6 +783,7 @@ export type TenantCreateWithoutAntrianInput = {
   templates?: Prisma.TemplateCreateNestedManyWithoutTenantInput
   whatsappIntents?: Prisma.WhatsappIntentCreateNestedManyWithoutTenantInput
   whatsappConversationStates?: Prisma.WhatsappConversationStateCreateNestedManyWithoutTenantInput
+  auditEvents?: Prisma.AuditEventCreateNestedManyWithoutTenantInput
 }
 
 export type TenantUncheckedCreateWithoutAntrianInput = {
@@ -775,6 +803,7 @@ export type TenantUncheckedCreateWithoutAntrianInput = {
   templates?: Prisma.TemplateUncheckedCreateNestedManyWithoutTenantInput
   whatsappIntents?: Prisma.WhatsappIntentUncheckedCreateNestedManyWithoutTenantInput
   whatsappConversationStates?: Prisma.WhatsappConversationStateUncheckedCreateNestedManyWithoutTenantInput
+  auditEvents?: Prisma.AuditEventUncheckedCreateNestedManyWithoutTenantInput
 }
 
 export type TenantCreateOrConnectWithoutAntrianInput = {
@@ -810,6 +839,7 @@ export type TenantUpdateWithoutAntrianInput = {
   templates?: Prisma.TemplateUpdateManyWithoutTenantNestedInput
   whatsappIntents?: Prisma.WhatsappIntentUpdateManyWithoutTenantNestedInput
   whatsappConversationStates?: Prisma.WhatsappConversationStateUpdateManyWithoutTenantNestedInput
+  auditEvents?: Prisma.AuditEventUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantUncheckedUpdateWithoutAntrianInput = {
@@ -829,6 +859,7 @@ export type TenantUncheckedUpdateWithoutAntrianInput = {
   templates?: Prisma.TemplateUncheckedUpdateManyWithoutTenantNestedInput
   whatsappIntents?: Prisma.WhatsappIntentUncheckedUpdateManyWithoutTenantNestedInput
   whatsappConversationStates?: Prisma.WhatsappConversationStateUncheckedUpdateManyWithoutTenantNestedInput
+  auditEvents?: Prisma.AuditEventUncheckedUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantCreateWithoutBookingsInput = {
@@ -848,6 +879,7 @@ export type TenantCreateWithoutBookingsInput = {
   templates?: Prisma.TemplateCreateNestedManyWithoutTenantInput
   whatsappIntents?: Prisma.WhatsappIntentCreateNestedManyWithoutTenantInput
   whatsappConversationStates?: Prisma.WhatsappConversationStateCreateNestedManyWithoutTenantInput
+  auditEvents?: Prisma.AuditEventCreateNestedManyWithoutTenantInput
 }
 
 export type TenantUncheckedCreateWithoutBookingsInput = {
@@ -867,6 +899,7 @@ export type TenantUncheckedCreateWithoutBookingsInput = {
   templates?: Prisma.TemplateUncheckedCreateNestedManyWithoutTenantInput
   whatsappIntents?: Prisma.WhatsappIntentUncheckedCreateNestedManyWithoutTenantInput
   whatsappConversationStates?: Prisma.WhatsappConversationStateUncheckedCreateNestedManyWithoutTenantInput
+  auditEvents?: Prisma.AuditEventUncheckedCreateNestedManyWithoutTenantInput
 }
 
 export type TenantCreateOrConnectWithoutBookingsInput = {
@@ -902,6 +935,7 @@ export type TenantUpdateWithoutBookingsInput = {
   templates?: Prisma.TemplateUpdateManyWithoutTenantNestedInput
   whatsappIntents?: Prisma.WhatsappIntentUpdateManyWithoutTenantNestedInput
   whatsappConversationStates?: Prisma.WhatsappConversationStateUpdateManyWithoutTenantNestedInput
+  auditEvents?: Prisma.AuditEventUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantUncheckedUpdateWithoutBookingsInput = {
@@ -921,6 +955,7 @@ export type TenantUncheckedUpdateWithoutBookingsInput = {
   templates?: Prisma.TemplateUncheckedUpdateManyWithoutTenantNestedInput
   whatsappIntents?: Prisma.WhatsappIntentUncheckedUpdateManyWithoutTenantNestedInput
   whatsappConversationStates?: Prisma.WhatsappConversationStateUncheckedUpdateManyWithoutTenantNestedInput
+  auditEvents?: Prisma.AuditEventUncheckedUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantCreateWithoutServicesInput = {
@@ -940,6 +975,7 @@ export type TenantCreateWithoutServicesInput = {
   templates?: Prisma.TemplateCreateNestedManyWithoutTenantInput
   whatsappIntents?: Prisma.WhatsappIntentCreateNestedManyWithoutTenantInput
   whatsappConversationStates?: Prisma.WhatsappConversationStateCreateNestedManyWithoutTenantInput
+  auditEvents?: Prisma.AuditEventCreateNestedManyWithoutTenantInput
 }
 
 export type TenantUncheckedCreateWithoutServicesInput = {
@@ -959,6 +995,7 @@ export type TenantUncheckedCreateWithoutServicesInput = {
   templates?: Prisma.TemplateUncheckedCreateNestedManyWithoutTenantInput
   whatsappIntents?: Prisma.WhatsappIntentUncheckedCreateNestedManyWithoutTenantInput
   whatsappConversationStates?: Prisma.WhatsappConversationStateUncheckedCreateNestedManyWithoutTenantInput
+  auditEvents?: Prisma.AuditEventUncheckedCreateNestedManyWithoutTenantInput
 }
 
 export type TenantCreateOrConnectWithoutServicesInput = {
@@ -994,6 +1031,7 @@ export type TenantUpdateWithoutServicesInput = {
   templates?: Prisma.TemplateUpdateManyWithoutTenantNestedInput
   whatsappIntents?: Prisma.WhatsappIntentUpdateManyWithoutTenantNestedInput
   whatsappConversationStates?: Prisma.WhatsappConversationStateUpdateManyWithoutTenantNestedInput
+  auditEvents?: Prisma.AuditEventUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantUncheckedUpdateWithoutServicesInput = {
@@ -1013,6 +1051,7 @@ export type TenantUncheckedUpdateWithoutServicesInput = {
   templates?: Prisma.TemplateUncheckedUpdateManyWithoutTenantNestedInput
   whatsappIntents?: Prisma.WhatsappIntentUncheckedUpdateManyWithoutTenantNestedInput
   whatsappConversationStates?: Prisma.WhatsappConversationStateUncheckedUpdateManyWithoutTenantNestedInput
+  auditEvents?: Prisma.AuditEventUncheckedUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantCreateWithoutHistoriesInput = {
@@ -1032,6 +1071,7 @@ export type TenantCreateWithoutHistoriesInput = {
   templates?: Prisma.TemplateCreateNestedManyWithoutTenantInput
   whatsappIntents?: Prisma.WhatsappIntentCreateNestedManyWithoutTenantInput
   whatsappConversationStates?: Prisma.WhatsappConversationStateCreateNestedManyWithoutTenantInput
+  auditEvents?: Prisma.AuditEventCreateNestedManyWithoutTenantInput
 }
 
 export type TenantUncheckedCreateWithoutHistoriesInput = {
@@ -1051,6 +1091,7 @@ export type TenantUncheckedCreateWithoutHistoriesInput = {
   templates?: Prisma.TemplateUncheckedCreateNestedManyWithoutTenantInput
   whatsappIntents?: Prisma.WhatsappIntentUncheckedCreateNestedManyWithoutTenantInput
   whatsappConversationStates?: Prisma.WhatsappConversationStateUncheckedCreateNestedManyWithoutTenantInput
+  auditEvents?: Prisma.AuditEventUncheckedCreateNestedManyWithoutTenantInput
 }
 
 export type TenantCreateOrConnectWithoutHistoriesInput = {
@@ -1086,6 +1127,7 @@ export type TenantUpdateWithoutHistoriesInput = {
   templates?: Prisma.TemplateUpdateManyWithoutTenantNestedInput
   whatsappIntents?: Prisma.WhatsappIntentUpdateManyWithoutTenantNestedInput
   whatsappConversationStates?: Prisma.WhatsappConversationStateUpdateManyWithoutTenantNestedInput
+  auditEvents?: Prisma.AuditEventUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantUncheckedUpdateWithoutHistoriesInput = {
@@ -1105,6 +1147,7 @@ export type TenantUncheckedUpdateWithoutHistoriesInput = {
   templates?: Prisma.TemplateUncheckedUpdateManyWithoutTenantNestedInput
   whatsappIntents?: Prisma.WhatsappIntentUncheckedUpdateManyWithoutTenantNestedInput
   whatsappConversationStates?: Prisma.WhatsappConversationStateUncheckedUpdateManyWithoutTenantNestedInput
+  auditEvents?: Prisma.AuditEventUncheckedUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantCreateWithoutTemplatesInput = {
@@ -1124,6 +1167,7 @@ export type TenantCreateWithoutTemplatesInput = {
   histories?: Prisma.HistoryCreateNestedManyWithoutTenantInput
   whatsappIntents?: Prisma.WhatsappIntentCreateNestedManyWithoutTenantInput
   whatsappConversationStates?: Prisma.WhatsappConversationStateCreateNestedManyWithoutTenantInput
+  auditEvents?: Prisma.AuditEventCreateNestedManyWithoutTenantInput
 }
 
 export type TenantUncheckedCreateWithoutTemplatesInput = {
@@ -1143,6 +1187,7 @@ export type TenantUncheckedCreateWithoutTemplatesInput = {
   histories?: Prisma.HistoryUncheckedCreateNestedManyWithoutTenantInput
   whatsappIntents?: Prisma.WhatsappIntentUncheckedCreateNestedManyWithoutTenantInput
   whatsappConversationStates?: Prisma.WhatsappConversationStateUncheckedCreateNestedManyWithoutTenantInput
+  auditEvents?: Prisma.AuditEventUncheckedCreateNestedManyWithoutTenantInput
 }
 
 export type TenantCreateOrConnectWithoutTemplatesInput = {
@@ -1178,6 +1223,7 @@ export type TenantUpdateWithoutTemplatesInput = {
   histories?: Prisma.HistoryUpdateManyWithoutTenantNestedInput
   whatsappIntents?: Prisma.WhatsappIntentUpdateManyWithoutTenantNestedInput
   whatsappConversationStates?: Prisma.WhatsappConversationStateUpdateManyWithoutTenantNestedInput
+  auditEvents?: Prisma.AuditEventUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantUncheckedUpdateWithoutTemplatesInput = {
@@ -1195,6 +1241,103 @@ export type TenantUncheckedUpdateWithoutTemplatesInput = {
   bookings?: Prisma.BookingUncheckedUpdateManyWithoutTenantNestedInput
   services?: Prisma.ServiceUncheckedUpdateManyWithoutTenantNestedInput
   histories?: Prisma.HistoryUncheckedUpdateManyWithoutTenantNestedInput
+  whatsappIntents?: Prisma.WhatsappIntentUncheckedUpdateManyWithoutTenantNestedInput
+  whatsappConversationStates?: Prisma.WhatsappConversationStateUncheckedUpdateManyWithoutTenantNestedInput
+  auditEvents?: Prisma.AuditEventUncheckedUpdateManyWithoutTenantNestedInput
+}
+
+export type TenantCreateWithoutAuditEventsInput = {
+  id?: string
+  name: string
+  slug?: string | null
+  description?: string
+  operationalHours?: string
+  latitude?: number | null
+  longitude?: number | null
+  setupCompleted?: boolean
+  createdAt?: Date | string
+  users?: Prisma.UserCreateNestedManyWithoutTenantInput
+  antrian?: Prisma.AntrianCreateNestedManyWithoutTenantInput
+  bookings?: Prisma.BookingCreateNestedManyWithoutTenantInput
+  services?: Prisma.ServiceCreateNestedManyWithoutTenantInput
+  histories?: Prisma.HistoryCreateNestedManyWithoutTenantInput
+  templates?: Prisma.TemplateCreateNestedManyWithoutTenantInput
+  whatsappIntents?: Prisma.WhatsappIntentCreateNestedManyWithoutTenantInput
+  whatsappConversationStates?: Prisma.WhatsappConversationStateCreateNestedManyWithoutTenantInput
+}
+
+export type TenantUncheckedCreateWithoutAuditEventsInput = {
+  id?: string
+  name: string
+  slug?: string | null
+  description?: string
+  operationalHours?: string
+  latitude?: number | null
+  longitude?: number | null
+  setupCompleted?: boolean
+  createdAt?: Date | string
+  users?: Prisma.UserUncheckedCreateNestedManyWithoutTenantInput
+  antrian?: Prisma.AntrianUncheckedCreateNestedManyWithoutTenantInput
+  bookings?: Prisma.BookingUncheckedCreateNestedManyWithoutTenantInput
+  services?: Prisma.ServiceUncheckedCreateNestedManyWithoutTenantInput
+  histories?: Prisma.HistoryUncheckedCreateNestedManyWithoutTenantInput
+  templates?: Prisma.TemplateUncheckedCreateNestedManyWithoutTenantInput
+  whatsappIntents?: Prisma.WhatsappIntentUncheckedCreateNestedManyWithoutTenantInput
+  whatsappConversationStates?: Prisma.WhatsappConversationStateUncheckedCreateNestedManyWithoutTenantInput
+}
+
+export type TenantCreateOrConnectWithoutAuditEventsInput = {
+  where: Prisma.TenantWhereUniqueInput
+  create: Prisma.XOR<Prisma.TenantCreateWithoutAuditEventsInput, Prisma.TenantUncheckedCreateWithoutAuditEventsInput>
+}
+
+export type TenantUpsertWithoutAuditEventsInput = {
+  update: Prisma.XOR<Prisma.TenantUpdateWithoutAuditEventsInput, Prisma.TenantUncheckedUpdateWithoutAuditEventsInput>
+  create: Prisma.XOR<Prisma.TenantCreateWithoutAuditEventsInput, Prisma.TenantUncheckedCreateWithoutAuditEventsInput>
+  where?: Prisma.TenantWhereInput
+}
+
+export type TenantUpdateToOneWithWhereWithoutAuditEventsInput = {
+  where?: Prisma.TenantWhereInput
+  data: Prisma.XOR<Prisma.TenantUpdateWithoutAuditEventsInput, Prisma.TenantUncheckedUpdateWithoutAuditEventsInput>
+}
+
+export type TenantUpdateWithoutAuditEventsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  description?: Prisma.StringFieldUpdateOperationsInput | string
+  operationalHours?: Prisma.StringFieldUpdateOperationsInput | string
+  latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  setupCompleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  users?: Prisma.UserUpdateManyWithoutTenantNestedInput
+  antrian?: Prisma.AntrianUpdateManyWithoutTenantNestedInput
+  bookings?: Prisma.BookingUpdateManyWithoutTenantNestedInput
+  services?: Prisma.ServiceUpdateManyWithoutTenantNestedInput
+  histories?: Prisma.HistoryUpdateManyWithoutTenantNestedInput
+  templates?: Prisma.TemplateUpdateManyWithoutTenantNestedInput
+  whatsappIntents?: Prisma.WhatsappIntentUpdateManyWithoutTenantNestedInput
+  whatsappConversationStates?: Prisma.WhatsappConversationStateUpdateManyWithoutTenantNestedInput
+}
+
+export type TenantUncheckedUpdateWithoutAuditEventsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  description?: Prisma.StringFieldUpdateOperationsInput | string
+  operationalHours?: Prisma.StringFieldUpdateOperationsInput | string
+  latitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  longitude?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  setupCompleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  users?: Prisma.UserUncheckedUpdateManyWithoutTenantNestedInput
+  antrian?: Prisma.AntrianUncheckedUpdateManyWithoutTenantNestedInput
+  bookings?: Prisma.BookingUncheckedUpdateManyWithoutTenantNestedInput
+  services?: Prisma.ServiceUncheckedUpdateManyWithoutTenantNestedInput
+  histories?: Prisma.HistoryUncheckedUpdateManyWithoutTenantNestedInput
+  templates?: Prisma.TemplateUncheckedUpdateManyWithoutTenantNestedInput
   whatsappIntents?: Prisma.WhatsappIntentUncheckedUpdateManyWithoutTenantNestedInput
   whatsappConversationStates?: Prisma.WhatsappConversationStateUncheckedUpdateManyWithoutTenantNestedInput
 }
@@ -1216,6 +1359,7 @@ export type TenantCreateWithoutWhatsappIntentsInput = {
   histories?: Prisma.HistoryCreateNestedManyWithoutTenantInput
   templates?: Prisma.TemplateCreateNestedManyWithoutTenantInput
   whatsappConversationStates?: Prisma.WhatsappConversationStateCreateNestedManyWithoutTenantInput
+  auditEvents?: Prisma.AuditEventCreateNestedManyWithoutTenantInput
 }
 
 export type TenantUncheckedCreateWithoutWhatsappIntentsInput = {
@@ -1235,6 +1379,7 @@ export type TenantUncheckedCreateWithoutWhatsappIntentsInput = {
   histories?: Prisma.HistoryUncheckedCreateNestedManyWithoutTenantInput
   templates?: Prisma.TemplateUncheckedCreateNestedManyWithoutTenantInput
   whatsappConversationStates?: Prisma.WhatsappConversationStateUncheckedCreateNestedManyWithoutTenantInput
+  auditEvents?: Prisma.AuditEventUncheckedCreateNestedManyWithoutTenantInput
 }
 
 export type TenantCreateOrConnectWithoutWhatsappIntentsInput = {
@@ -1270,6 +1415,7 @@ export type TenantUpdateWithoutWhatsappIntentsInput = {
   histories?: Prisma.HistoryUpdateManyWithoutTenantNestedInput
   templates?: Prisma.TemplateUpdateManyWithoutTenantNestedInput
   whatsappConversationStates?: Prisma.WhatsappConversationStateUpdateManyWithoutTenantNestedInput
+  auditEvents?: Prisma.AuditEventUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantUncheckedUpdateWithoutWhatsappIntentsInput = {
@@ -1289,6 +1435,7 @@ export type TenantUncheckedUpdateWithoutWhatsappIntentsInput = {
   histories?: Prisma.HistoryUncheckedUpdateManyWithoutTenantNestedInput
   templates?: Prisma.TemplateUncheckedUpdateManyWithoutTenantNestedInput
   whatsappConversationStates?: Prisma.WhatsappConversationStateUncheckedUpdateManyWithoutTenantNestedInput
+  auditEvents?: Prisma.AuditEventUncheckedUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantCreateWithoutWhatsappConversationStatesInput = {
@@ -1308,6 +1455,7 @@ export type TenantCreateWithoutWhatsappConversationStatesInput = {
   histories?: Prisma.HistoryCreateNestedManyWithoutTenantInput
   templates?: Prisma.TemplateCreateNestedManyWithoutTenantInput
   whatsappIntents?: Prisma.WhatsappIntentCreateNestedManyWithoutTenantInput
+  auditEvents?: Prisma.AuditEventCreateNestedManyWithoutTenantInput
 }
 
 export type TenantUncheckedCreateWithoutWhatsappConversationStatesInput = {
@@ -1327,6 +1475,7 @@ export type TenantUncheckedCreateWithoutWhatsappConversationStatesInput = {
   histories?: Prisma.HistoryUncheckedCreateNestedManyWithoutTenantInput
   templates?: Prisma.TemplateUncheckedCreateNestedManyWithoutTenantInput
   whatsappIntents?: Prisma.WhatsappIntentUncheckedCreateNestedManyWithoutTenantInput
+  auditEvents?: Prisma.AuditEventUncheckedCreateNestedManyWithoutTenantInput
 }
 
 export type TenantCreateOrConnectWithoutWhatsappConversationStatesInput = {
@@ -1362,6 +1511,7 @@ export type TenantUpdateWithoutWhatsappConversationStatesInput = {
   histories?: Prisma.HistoryUpdateManyWithoutTenantNestedInput
   templates?: Prisma.TemplateUpdateManyWithoutTenantNestedInput
   whatsappIntents?: Prisma.WhatsappIntentUpdateManyWithoutTenantNestedInput
+  auditEvents?: Prisma.AuditEventUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantUncheckedUpdateWithoutWhatsappConversationStatesInput = {
@@ -1381,6 +1531,7 @@ export type TenantUncheckedUpdateWithoutWhatsappConversationStatesInput = {
   histories?: Prisma.HistoryUncheckedUpdateManyWithoutTenantNestedInput
   templates?: Prisma.TemplateUncheckedUpdateManyWithoutTenantNestedInput
   whatsappIntents?: Prisma.WhatsappIntentUncheckedUpdateManyWithoutTenantNestedInput
+  auditEvents?: Prisma.AuditEventUncheckedUpdateManyWithoutTenantNestedInput
 }
 
 
@@ -1397,6 +1548,7 @@ export type TenantCountOutputType = {
   templates: number
   whatsappIntents: number
   whatsappConversationStates: number
+  auditEvents: number
 }
 
 export type TenantCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1408,6 +1560,7 @@ export type TenantCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions
   templates?: boolean | TenantCountOutputTypeCountTemplatesArgs
   whatsappIntents?: boolean | TenantCountOutputTypeCountWhatsappIntentsArgs
   whatsappConversationStates?: boolean | TenantCountOutputTypeCountWhatsappConversationStatesArgs
+  auditEvents?: boolean | TenantCountOutputTypeCountAuditEventsArgs
 }
 
 /**
@@ -1476,6 +1629,13 @@ export type TenantCountOutputTypeCountWhatsappConversationStatesArgs<ExtArgs ext
   where?: Prisma.WhatsappConversationStateWhereInput
 }
 
+/**
+ * TenantCountOutputType without action
+ */
+export type TenantCountOutputTypeCountAuditEventsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.AuditEventWhereInput
+}
+
 
 export type TenantSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -1495,6 +1655,7 @@ export type TenantSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   templates?: boolean | Prisma.Tenant$templatesArgs<ExtArgs>
   whatsappIntents?: boolean | Prisma.Tenant$whatsappIntentsArgs<ExtArgs>
   whatsappConversationStates?: boolean | Prisma.Tenant$whatsappConversationStatesArgs<ExtArgs>
+  auditEvents?: boolean | Prisma.Tenant$auditEventsArgs<ExtArgs>
   _count?: boolean | Prisma.TenantCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["tenant"]>
 
@@ -1544,6 +1705,7 @@ export type TenantInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   templates?: boolean | Prisma.Tenant$templatesArgs<ExtArgs>
   whatsappIntents?: boolean | Prisma.Tenant$whatsappIntentsArgs<ExtArgs>
   whatsappConversationStates?: boolean | Prisma.Tenant$whatsappConversationStatesArgs<ExtArgs>
+  auditEvents?: boolean | Prisma.Tenant$auditEventsArgs<ExtArgs>
   _count?: boolean | Prisma.TenantCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type TenantIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -1560,6 +1722,7 @@ export type $TenantPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs
     templates: Prisma.$TemplatePayload<ExtArgs>[]
     whatsappIntents: Prisma.$WhatsappIntentPayload<ExtArgs>[]
     whatsappConversationStates: Prisma.$WhatsappConversationStatePayload<ExtArgs>[]
+    auditEvents: Prisma.$AuditEventPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1973,6 +2136,7 @@ export interface Prisma__TenantClient<T, Null = never, ExtArgs extends runtime.T
   templates<T extends Prisma.Tenant$templatesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Tenant$templatesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$TemplatePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   whatsappIntents<T extends Prisma.Tenant$whatsappIntentsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Tenant$whatsappIntentsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$WhatsappIntentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   whatsappConversationStates<T extends Prisma.Tenant$whatsappConversationStatesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Tenant$whatsappConversationStatesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$WhatsappConversationStatePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  auditEvents<T extends Prisma.Tenant$auditEventsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Tenant$auditEventsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$AuditEventPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2593,6 +2757,30 @@ export type Tenant$whatsappConversationStatesArgs<ExtArgs extends runtime.Types.
   take?: number
   skip?: number
   distinct?: Prisma.WhatsappConversationStateScalarFieldEnum | Prisma.WhatsappConversationStateScalarFieldEnum[]
+}
+
+/**
+ * Tenant.auditEvents
+ */
+export type Tenant$auditEventsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the AuditEvent
+   */
+  select?: Prisma.AuditEventSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the AuditEvent
+   */
+  omit?: Prisma.AuditEventOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.AuditEventInclude<ExtArgs> | null
+  where?: Prisma.AuditEventWhereInput
+  orderBy?: Prisma.AuditEventOrderByWithRelationInput | Prisma.AuditEventOrderByWithRelationInput[]
+  cursor?: Prisma.AuditEventWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.AuditEventScalarFieldEnum | Prisma.AuditEventScalarFieldEnum[]
 }
 
 /**

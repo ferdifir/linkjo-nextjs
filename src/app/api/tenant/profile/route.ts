@@ -3,6 +3,7 @@ import { getClaims } from '@/lib/auth'
 import { normalizeServiceInputs } from '@/lib/services'
 import { normalizeOperationalHoursConfig } from '@/lib/operational-hours'
 import { displayName } from '@/lib/display-name'
+import { auditEvent } from '@/lib/audit'
 
 export async function GET() {
   const claims = await getClaims()
@@ -150,6 +151,20 @@ export async function PUT(req: Request) {
     })
 
     return { ...updatedTenant, services: updatedServices }
+  })
+
+  await auditEvent({
+    tenantId: claims.tenant_id,
+    actorType: "owner",
+    actorIdentifier: claims.user_id,
+    action: "tenant.profile.update",
+    resourceType: "tenant",
+    resourceId: claims.tenant_id,
+    metadata: {
+      service_count: tenant.services.length,
+      setup_completed: tenant.setupCompleted,
+      has_location: tenant.latitude !== null && tenant.longitude !== null,
+    },
   })
 
   return Response.json({

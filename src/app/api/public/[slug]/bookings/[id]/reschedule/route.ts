@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma"
 import { notifyBookingRescheduled } from "@/lib/notifications"
 import { normalizePhone, parsePositiveInt, SLUG_PATTERN } from "@/lib/validation"
 import { checkRateLimit, clientIp, rateLimitResponse } from "@/lib/rate-limit"
+import { auditEvent } from "@/lib/audit"
 
 export async function PUT(
   req: Request,
@@ -34,6 +35,15 @@ export async function PUT(
     }
     const booking = await rescheduleBooking(tenant.id, BigInt(bookingId), body)
     await notifyBookingRescheduled(tenant.id, booking.phone, booking)
+    await auditEvent({
+      tenantId: tenant.id,
+      actorType: "customer",
+      actorIdentifier: booking.phone,
+      action: "booking.reschedule",
+      resourceType: "booking",
+      resourceId: booking.id,
+      metadata: { source: "public", slug, status: booking.status },
+    })
     return Response.json(booking)
   } catch (err) {
     return Response.json(

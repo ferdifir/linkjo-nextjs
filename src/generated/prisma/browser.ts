@@ -63,6 +63,11 @@ export type History = Prisma.HistoryModel
  */
 export type Template = Prisma.TemplateModel
 /**
+ * Model AuditEvent
+ * 
+ */
+export type AuditEvent = Prisma.AuditEventModel
+/**
  * Model WhatsappIntent
  * 
  */

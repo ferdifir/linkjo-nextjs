@@ -393,6 +393,7 @@ export const ModelName = {
   RateLimit: 'RateLimit',
   History: 'History',
   Template: 'Template',
+  AuditEvent: 'AuditEvent',
   WhatsappIntent: 'WhatsappIntent',
   WhatsappConversationState: 'WhatsappConversationState'
 } as const
@@ -410,7 +411,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "tenant" | "user" | "otpCode" | "antrian" | "booking" | "service" | "rateLimit" | "history" | "template" | "whatsappIntent" | "whatsappConversationState"
+    modelProps: "tenant" | "user" | "otpCode" | "antrian" | "booking" | "service" | "rateLimit" | "history" | "template" | "auditEvent" | "whatsappIntent" | "whatsappConversationState"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1080,6 +1081,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    AuditEvent: {
+      payload: Prisma.$AuditEventPayload<ExtArgs>
+      fields: Prisma.AuditEventFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.AuditEventFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuditEventPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.AuditEventFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuditEventPayload>
+        }
+        findFirst: {
+          args: Prisma.AuditEventFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuditEventPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.AuditEventFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuditEventPayload>
+        }
+        findMany: {
+          args: Prisma.AuditEventFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuditEventPayload>[]
+        }
+        create: {
+          args: Prisma.AuditEventCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuditEventPayload>
+        }
+        createMany: {
+          args: Prisma.AuditEventCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.AuditEventCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuditEventPayload>[]
+        }
+        delete: {
+          args: Prisma.AuditEventDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuditEventPayload>
+        }
+        update: {
+          args: Prisma.AuditEventUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuditEventPayload>
+        }
+        deleteMany: {
+          args: Prisma.AuditEventDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.AuditEventUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.AuditEventUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuditEventPayload>[]
+        }
+        upsert: {
+          args: Prisma.AuditEventUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AuditEventPayload>
+        }
+        aggregate: {
+          args: Prisma.AuditEventAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateAuditEvent>
+        }
+        groupBy: {
+          args: Prisma.AuditEventGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AuditEventGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.AuditEventCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AuditEventCountAggregateOutputType> | number
+        }
+      }
+    }
     WhatsappIntent: {
       payload: Prisma.$WhatsappIntentPayload<ExtArgs>
       fields: Prisma.WhatsappIntentFieldRefs
@@ -1391,6 +1466,21 @@ export const TemplateScalarFieldEnum = {
 export type TemplateScalarFieldEnum = (typeof TemplateScalarFieldEnum)[keyof typeof TemplateScalarFieldEnum]
 
 
+export const AuditEventScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  actorType: 'actorType',
+  actorIdentifier: 'actorIdentifier',
+  action: 'action',
+  resourceType: 'resourceType',
+  resourceId: 'resourceId',
+  metadata: 'metadata',
+  createdAt: 'createdAt'
+} as const
+
+export type AuditEventScalarFieldEnum = (typeof AuditEventScalarFieldEnum)[keyof typeof AuditEventScalarFieldEnum]
+
+
 export const WhatsappIntentScalarFieldEnum = {
   id: 'id',
   token: 'token',
@@ -1579,20 +1669,6 @@ export type ListEnumBookingStatusFieldRefInput<$PrismaModel> = FieldRefInputType
 
 
 /**
- * Reference to a field of type 'WhatsappIntentPurpose'
- */
-export type EnumWhatsappIntentPurposeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'WhatsappIntentPurpose'>
-    
-
-
-/**
- * Reference to a field of type 'WhatsappIntentPurpose[]'
- */
-export type ListEnumWhatsappIntentPurposeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'WhatsappIntentPurpose[]'>
-    
-
-
-/**
  * Reference to a field of type 'Json'
  */
 export type JsonFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Json'>
@@ -1603,6 +1679,20 @@ export type JsonFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'J
  * Reference to a field of type 'QueryMode'
  */
 export type EnumQueryModeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'QueryMode'>
+    
+
+
+/**
+ * Reference to a field of type 'WhatsappIntentPurpose'
+ */
+export type EnumWhatsappIntentPurposeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'WhatsappIntentPurpose'>
+    
+
+
+/**
+ * Reference to a field of type 'WhatsappIntentPurpose[]'
+ */
+export type ListEnumWhatsappIntentPurposeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'WhatsappIntentPurpose[]'>
     
 
 /**
@@ -1724,6 +1814,7 @@ export type GlobalOmitConfig = {
   rateLimit?: Prisma.RateLimitOmit
   history?: Prisma.HistoryOmit
   template?: Prisma.TemplateOmit
+  auditEvent?: Prisma.AuditEventOmit
   whatsappIntent?: Prisma.WhatsappIntentOmit
   whatsappConversationState?: Prisma.WhatsappConversationStateOmit
 }

@@ -25,6 +25,7 @@ model Tenant {
   templates      Template[]
   whatsappIntents WhatsappIntent[]
   whatsappConversationStates WhatsappConversationState[]
+  auditEvents    AuditEvent[]
 
   @@map("tenants")
 }
@@ -145,6 +146,24 @@ model Template {
 
   @@unique([tenantId, key])
   @@map("templates")
+}
+
+model AuditEvent {
+  id              BigInt   @id @default(autoincrement())
+  tenantId        String?  @map("tenant_id")
+  actorType       String   @map("actor_type")
+  actorIdentifier String?  @map("actor_identifier")
+  action          String
+  resourceType    String?  @map("resource_type")
+  resourceId      String?  @map("resource_id")
+  metadata        Json     @default("{}")
+  createdAt       DateTime @default(now()) @map("created_at")
+  tenant          Tenant?  @relation(fields: [tenantId], references: [id], onDelete: SetNull)
+
+  @@index([tenantId, createdAt])
+  @@index([action, createdAt])
+  @@index([actorType, createdAt])
+  @@map("audit_events")
 }
 
 model WhatsappIntent {

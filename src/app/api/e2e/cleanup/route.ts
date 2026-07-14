@@ -1,9 +1,8 @@
 import { prisma } from "@/lib/prisma"
+import { e2eNotFound, isE2eRequestAllowed } from "@/lib/e2e"
 
 export async function POST(req: Request) {
-  if (process.env.E2E_TEST_MODE !== "1") {
-    return Response.json({ error: "not found" }, { status: 404 })
-  }
+  if (!isE2eRequestAllowed(req)) return e2eNotFound()
 
   const { phone, slug } = await req.json()
   if (typeof phone !== "string" || typeof slug !== "string") {

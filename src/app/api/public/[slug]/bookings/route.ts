@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma"
 import { notifyBookingCreated } from "@/lib/notifications"
 import { normalizePhone, SLUG_PATTERN } from "@/lib/validation"
 import { checkRateLimit, clientIp, rateLimitResponse } from "@/lib/rate-limit"
+import { auditEvent } from "@/lib/audit"
 
 export async function POST(req: Request, { params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
@@ -30,6 +31,15 @@ export async function POST(req: Request, { params }: { params: Promise<{ slug: s
 
     const booking = await createBooking(tenant.id, body)
     await notifyBookingCreated(tenant.id, booking.phone, booking)
+    await auditEvent({
+      tenantId: tenant.id,
+      actorType: "customer",
+      actorIdentifier: booking.phone,
+      action: "booking.create",
+      resourceType: "booking",
+      resourceId: booking.id,
+      metadata: { source: "public", slug, service: booking.service, status: booking.status },
+    })
     return Response.json(booking, { status: 201 })
   } catch (err) {
     return Response.json(

@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma"
 
 export async function notifyQueueCreated(tenantId: string, phone: string | null, no: number, estimatedWaitMin: number) {
   if (!phone) return
+  await rememberWhatsappConversation(tenantId, phone)
   const message = await renderTemplate(tenantId, "queue_created", {
     no,
     estimated_wait_min: estimatedWaitMin,
@@ -13,6 +14,7 @@ export async function notifyQueueCreated(tenantId: string, phone: string | null,
 
 export async function notifyQueueCalled(tenantId: string, phone: string | null, no: number) {
   if (!phone) return
+  await rememberWhatsappConversation(tenantId, phone)
   const message = await renderTemplate(tenantId, "queue_called", { no })
   await sendWA(phone, message)
 }
@@ -22,7 +24,18 @@ export async function notifyBookingCreated(
   phone: string,
   booking: { id: string; public_token: string; service: string; scheduled_at: Date },
 ) {
+  await rememberWhatsappConversation(tenantId, phone)
   const message = await renderTemplate(tenantId, "booking_created", bookingVariables(booking))
+  await sendWA(phone, message)
+}
+
+export async function notifyBookingConfirmed(
+  tenantId: string,
+  phone: string,
+  booking: { id: string; service: string; scheduled_at: Date },
+) {
+  await rememberWhatsappConversation(tenantId, phone)
+  const message = await renderTemplate(tenantId, "booking_confirmed", bookingVariables(booking))
   await sendWA(phone, message)
 }
 
@@ -31,11 +44,13 @@ export async function notifyBookingRescheduled(
   phone: string,
   booking: { id: string; service: string; scheduled_at: Date },
 ) {
+  await rememberWhatsappConversation(tenantId, phone)
   const message = await renderTemplate(tenantId, "booking_rescheduled", bookingVariables(booking))
   await sendWA(phone, message)
 }
 
 export async function notifyBookingCancelled(tenantId: string, phone: string, bookingId: string) {
+  await rememberWhatsappConversation(tenantId, phone)
   const message = await renderTemplate(tenantId, "booking_cancelled", { booking_id: bookingId })
   await sendWA(phone, message)
 }
@@ -82,4 +97,12 @@ function formatSchedule(date: Date) {
     timeStyle: "short",
     timeZone: "Asia/Jakarta",
   }).format(date)
+}
+
+async function rememberWhatsappConversation(tenantId: string, phone: string) {
+  await prisma.whatsappConversationState.upsert({
+    where: { tenantId_phone: { tenantId, phone } },
+    create: { tenantId, phone, lastInteractionAt: new Date() },
+    update: { lastInteractionAt: new Date() },
+  })
 }

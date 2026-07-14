@@ -6,6 +6,7 @@ test("signup from slug check, onboard business, then create several queue entrie
   const slug = `e2e-${suffix}`
   const phone = `62812345${suffix.replace(/[^0-9]/g, "").padEnd(5, "0").slice(0, 5)}`
   const businessName = `E2E Business ${suffix}`
+  const bookingCustomer = `Rina Booking ${suffix}`
 
   await page.request.post("/api/e2e/cleanup", {
     data: { phone, slug },
@@ -63,10 +64,27 @@ test("signup from slug check, onboard business, then create several queue entrie
     await expect(page.getByText(new RegExp(`Nomor kamu #${queueBody.no}`))).toBeVisible()
   }
 
+  const bookingForm = page.locator("form").nth(1)
+  await bookingForm.locator("input").nth(0).fill(bookingCustomer)
+  await bookingForm.locator("input").nth(1).fill(nextCustomerPhone(phone, bookingCustomer))
+  await bookingForm.locator("select").selectOption({ index: 1 })
+  await bookingForm.locator('input[type="datetime-local"]').fill(nextJakartaDateTimeLocal())
+  await bookingForm.locator("input").last().fill("Catatan booking e2e")
+  const bookingResponsePromise = page.waitForResponse((response) => (
+    response.url().includes(`/api/public/${slug}/bookings`) && response.request().method() === "POST"
+  ))
+  await bookingForm.getByRole("button", { name: /Buat Booking/i }).click()
+  const bookingResponse = await bookingResponsePromise
+  const bookingBody = await bookingResponse.json()
+  expect(bookingResponse.ok(), JSON.stringify(bookingBody)).toBeTruthy()
+  await expect(page.getByText(/Token kelola:/i)).toBeVisible()
+
   await page.goto("/dashboard")
   await expect(page.getByText("Budi E2E")).toBeVisible()
   await expect(page.getByText("Sari E2E")).toBeVisible()
   await expect(page.getByText("Andi E2E")).toBeVisible()
+  await expect(page.getByText(bookingCustomer)).toBeVisible()
+  await expect(page.getByText("Catatan booking e2e")).toBeVisible()
 })
 
 async function waitForWhatsappIntent(page: Page, phone: string): Promise<{ id: string; token: string }> {
@@ -85,4 +103,19 @@ async function waitForWhatsappIntent(page: Page, phone: string): Promise<{ id: s
 function nextCustomerPhone(ownerPhone: string, customerName: string) {
   const offset = customerName.charCodeAt(0) % 10
   return `${ownerPhone.slice(0, -1)}${offset}`
+}
+
+function nextJakartaDateTimeLocal() {
+  const tomorrow = new Date(Date.now() + 24 * 60 * 60 * 1000)
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Jakarta",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hourCycle: "h23",
+  }).formatToParts(tomorrow)
+  const value = (type: string) => parts.find((part) => part.type === type)?.value || ""
+  return `${value("year")}-${value("month")}-${value("day")}T10:00`
 }

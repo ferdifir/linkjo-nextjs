@@ -60,6 +60,7 @@ export const ModelName = {
   RateLimit: 'RateLimit',
   History: 'History',
   Template: 'Template',
+  AuditEvent: 'AuditEvent',
   WhatsappIntent: 'WhatsappIntent',
   WhatsappConversationState: 'WhatsappConversationState'
 } as const
@@ -202,6 +203,21 @@ export const TemplateScalarFieldEnum = {
 } as const
 
 export type TemplateScalarFieldEnum = (typeof TemplateScalarFieldEnum)[keyof typeof TemplateScalarFieldEnum]
+
+
+export const AuditEventScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  actorType: 'actorType',
+  actorIdentifier: 'actorIdentifier',
+  action: 'action',
+  resourceType: 'resourceType',
+  resourceId: 'resourceId',
+  metadata: 'metadata',
+  createdAt: 'createdAt'
+} as const
+
+export type AuditEventScalarFieldEnum = (typeof AuditEventScalarFieldEnum)[keyof typeof AuditEventScalarFieldEnum]
 
 
 export const WhatsappIntentScalarFieldEnum = {

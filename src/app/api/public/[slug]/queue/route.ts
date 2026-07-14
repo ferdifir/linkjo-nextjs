@@ -4,6 +4,7 @@ import { createQueueEntry } from "@/lib/queue"
 import { isWithinOperationalHours } from "@/lib/operational-hours"
 import { normalizePhone, SLUG_PATTERN } from "@/lib/validation"
 import { checkRateLimit, clientIp, rateLimitResponse } from "@/lib/rate-limit"
+import { auditEvent } from "@/lib/audit"
 
 export async function POST(req: Request, { params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params
@@ -34,6 +35,15 @@ export async function POST(req: Request, { params }: { params: Promise<{ slug: s
 
     const entry = await createQueueEntry(tenant.id, body)
     await notifyQueueCreated(tenant.id, entry.phone, entry.no, entry.estimated_wait_min)
+    await auditEvent({
+      tenantId: tenant.id,
+      actorType: "customer",
+      actorIdentifier: entry.phone,
+      action: "queue.create",
+      resourceType: "queue",
+      resourceId: entry.no,
+      metadata: { source: "public", slug, queue_date: entry.queue_date },
+    })
     return Response.json(entry, { status: 201 })
   } catch (err) {
     return Response.json(

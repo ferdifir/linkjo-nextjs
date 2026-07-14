@@ -5,9 +5,11 @@ import { cancelBooking, createBooking, rescheduleBooking } from "@/lib/bookings"
 import { formatOperationalHours } from "@/lib/operational-hours"
 import { prisma } from "@/lib/prisma"
 import { createQueueEntry, estimateWaitMinutes, queueDateFor } from "@/lib/queue"
-import { findMatchingService, formatServices } from "@/lib/services"
+import { findMatchingService, formatServices, resolveServiceMatch } from "@/lib/services"
 import { buildTenantSystemPrompt, getGroqApiKey } from "@/lib/tenant-prompt"
 import { cleanText } from "@/lib/validation"
+import { logger, maskPhone, safeError } from "@/lib/logger"
+import { auditEvent } from "@/lib/audit"
 
 type TenantProfile = {
   id: string
@@ -69,7 +71,13 @@ export async function answerWithWhatsappAgent(input: AgentInput) {
     })
     return cleanText(result.text, 1200) || fallbackFaq(input.tenant)
   } catch (error) {
-    console.error("whatsapp agent failed", error)
+    logger.error({
+      event: "whatsapp.agent.failed",
+      tenant_id: input.tenant.id,
+      tenant_slug: input.tenant.slug,
+      phone: maskPhone(input.phone),
+      err: safeError(error),
+    })
     return fallbackFaq(input.tenant)
   }
 }
@@ -129,6 +137,15 @@ function whatsappTools(input: AgentInput) {
       }),
       execute: async ({ name }) => {
         const entry = await createQueueEntry(input.tenant.id, { nama: name, phone: input.phone })
+        await auditEvent({
+          tenantId: input.tenant.id,
+          actorType: "whatsapp",
+          actorIdentifier: input.phone,
+          action: "queue.create",
+          resourceType: "queue",
+          resourceId: entry.no,
+          metadata: { source: "whatsapp_ai", queue_date: entry.queue_date },
+        })
         return entry
       },
     }),
@@ -144,6 +161,15 @@ function whatsappTools(input: AgentInput) {
         })
         if (!latest) return { cancelled: false, message: "Tidak ada antrean aktif yang bisa dibatalkan." }
         await prisma.antrian.update({ where: { id: latest.id }, data: { status: "batal" } })
+        await auditEvent({
+          tenantId: input.tenant.id,
+          actorType: "whatsapp",
+          actorIdentifier: input.phone,
+          action: "queue.cancel",
+          resourceType: "queue",
+          resourceId: latest.noAntrian,
+          metadata: { source: "whatsapp_ai" },
+        })
         return { cancelled: true, no: latest.noAntrian }
       },
     }),
@@ -177,14 +203,30 @@ function whatsappTools(input: AgentInput) {
       }),
       execute: async ({ serviceName, scheduledAt, customerName, notes, confirmed }) => {
         if (!confirmed) return { created: false, message: "Minta konfirmasi user sebelum membuat booking." }
-        const service = findMatchingService(activeServices, serviceName)
-        if (!service) return { created: false, message: `Layanan tidak ditemukan. Pilihan: ${formatServices(activeServices)}` }
+        const serviceMatch = resolveServiceMatch(activeServices, serviceName)
+        if (serviceMatch.status === "ambiguous") {
+          return {
+            created: false,
+            message: `Ada beberapa layanan yang cocok: ${formatServices(serviceMatch.services)}. Minta user memilih nama layanan yang lebih spesifik.`,
+          }
+        }
+        if (serviceMatch.status === "not_found") return { created: false, message: `Layanan tidak ditemukan. Pilihan: ${formatServices(activeServices)}` }
+        const service = serviceMatch.service
         const booking = await createBooking(input.tenant.id, {
           customer_name: customerName,
           phone: input.phone,
           service_id: service.id,
           scheduled_at: scheduledAt,
           notes: notes || "Dibuat via WhatsApp AI",
+        })
+        await auditEvent({
+          tenantId: input.tenant.id,
+          actorType: "whatsapp",
+          actorIdentifier: input.phone,
+          action: "booking.create",
+          resourceType: "booking",
+          resourceId: booking.id,
+          metadata: { source: "whatsapp_ai", service: booking.service, status: booking.status },
         })
         await updateConversationState(input.tenant.id, input.phone, {
           lastMentionedServiceId: service.id,
@@ -213,6 +255,15 @@ function whatsappTools(input: AgentInput) {
           scheduled_at: scheduledAt,
           notes: "Dijadwalkan ulang via WhatsApp AI",
         })
+        await auditEvent({
+          tenantId: input.tenant.id,
+          actorType: "whatsapp",
+          actorIdentifier: input.phone,
+          action: "booking.reschedule",
+          resourceType: "booking",
+          resourceId: booking.id,
+          metadata: { source: "whatsapp_ai", service: booking.service },
+        })
         return { rescheduled: true, booking }
       },
     }),
@@ -228,6 +279,15 @@ function whatsappTools(input: AgentInput) {
         const booking = await cancelBooking(input.tenant.id, BigInt(bookingId), {
           phone: input.phone,
           public_token: publicToken,
+        })
+        await auditEvent({
+          tenantId: input.tenant.id,
+          actorType: "whatsapp",
+          actorIdentifier: input.phone,
+          action: "booking.cancel",
+          resourceType: "booking",
+          resourceId: booking.id,
+          metadata: { source: "whatsapp_ai" },
         })
         return { cancelled: true, booking }
       },

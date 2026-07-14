@@ -3,8 +3,9 @@ import { sendWA } from "@/lib/fonnte"
 import { createQueueEntry, estimateWaitMinutes, queueDateFor } from "@/lib/queue"
 import { cleanText, normalizePhone } from "@/lib/validation"
 import { prisma } from "@/lib/prisma"
-import { findMatchingService, formatServices } from "@/lib/services"
+import { formatServices, resolveServiceMatch } from "@/lib/services"
 import { answerWithWhatsappAgent } from "@/lib/whatsapp-agent"
+import { auditEvent } from "@/lib/audit"
 
 type TenantProfile = {
   id: string
@@ -48,6 +49,15 @@ async function tryBusinessAction(tenant: TenantProfile, phone: string, message: 
   if (/\b(antrian|ambil nomor|daftar antre|daftar antri|queue)\b/.test(lower)) {
     const name = extractName(message) || phone
     const entry = await createQueueEntry(tenant.id, { nama: name, phone })
+    await auditEvent({
+      tenantId: tenant.id,
+      actorType: "whatsapp",
+      actorIdentifier: phone,
+      action: "queue.create",
+      resourceType: "queue",
+      resourceId: entry.no,
+      metadata: { source: "whatsapp", queue_date: entry.queue_date },
+    })
     return `Kamu sudah masuk antrian #${entry.no}. Estimasi tunggu sekitar ${entry.estimated_wait_min} menit. Kami akan beri tahu saat giliranmu siap.`
   }
 
@@ -72,6 +82,15 @@ async function tryBusinessAction(tenant: TenantProfile, phone: string, message: 
     })
     if (!latest) return "Tidak ada antrian aktif yang bisa dibatalkan untuk nomor ini."
     await prisma.antrian.update({ where: { id: latest.id }, data: { status: "batal" } })
+    await auditEvent({
+      tenantId: tenant.id,
+      actorType: "whatsapp",
+      actorIdentifier: phone,
+      action: "queue.cancel",
+      resourceType: "queue",
+      resourceId: latest.noAntrian,
+      metadata: { source: "whatsapp" },
+    })
     return `Antrian #${latest.noAntrian} sudah dibatalkan.`
   }
 
@@ -86,6 +105,15 @@ async function tryBusinessAction(tenant: TenantProfile, phone: string, message: 
       scheduled_at: parsed.scheduledAt,
       notes: "Dijadwalkan ulang via WhatsApp",
     })
+    await auditEvent({
+      tenantId: tenant.id,
+      actorType: "whatsapp",
+      actorIdentifier: phone,
+      action: "booking.reschedule",
+      resourceType: "booking",
+      resourceId: booking.id,
+      metadata: { source: "whatsapp", service: booking.service },
+    })
     return `Booking #${booking.id} dijadwalkan ulang ke ${formatSchedule(booking.scheduled_at)}.`
   }
 
@@ -93,6 +121,15 @@ async function tryBusinessAction(tenant: TenantProfile, phone: string, message: 
     const parsed = parseCancelBookingMessage(message)
     if (!parsed) return "Untuk batal booking via WhatsApp, kirim: batal booking <nomor-booking> <token>."
     const booking = await cancelBooking(tenant.id, BigInt(parsed.id), { phone, public_token: parsed.token })
+    await auditEvent({
+      tenantId: tenant.id,
+      actorType: "whatsapp",
+      actorIdentifier: phone,
+      action: "booking.cancel",
+      resourceType: "booking",
+      resourceId: booking.id,
+      metadata: { source: "whatsapp" },
+    })
     return `Booking #${booking.id} sudah dibatalkan.`
   }
 
@@ -101,13 +138,18 @@ async function tryBusinessAction(tenant: TenantProfile, phone: string, message: 
     if (!parsed) {
       return "Untuk booking, kirim format: booking <layanan> <YYYY-MM-DD> <HH:mm>. Contoh: booking haircut 2026-07-20 14:30."
     }
-    const service = findMatchingService(tenant.services.filter((item) => item.active), parsed.service)
-    if (!service) {
+    const activeServices = tenant.services.filter((item) => item.active)
+    const serviceMatch = resolveServiceMatch(activeServices, parsed.service)
+    if (serviceMatch.status === "ambiguous") {
+      return `Saya menemukan beberapa layanan yang mirip: ${formatServices(serviceMatch.services)}. Mohon tulis nama layanan yang lebih spesifik.`
+    }
+    if (serviceMatch.status === "not_found") {
       const serviceList = formatServices(tenant.services)
       return serviceList
         ? `Layanan tidak ditemukan. Pilih salah satu: ${serviceList}.`
         : "Belum ada layanan aktif untuk booking. Silakan hubungi staf bisnis."
     }
+    const service = serviceMatch.service
 
     const booking = await createBooking(tenant.id, {
       customer_name: phone,
@@ -115,6 +157,15 @@ async function tryBusinessAction(tenant: TenantProfile, phone: string, message: 
       service_id: service.id,
       scheduled_at: parsed.scheduledAt,
       notes: "Dibuat via WhatsApp",
+    })
+    await auditEvent({
+      tenantId: tenant.id,
+      actorType: "whatsapp",
+      actorIdentifier: phone,
+      action: "booking.create",
+      resourceType: "booking",
+      resourceId: booking.id,
+      metadata: { source: "whatsapp", service: booking.service, status: booking.status },
     })
     return `Booking #${booking.id} untuk ${booking.service} sudah dibuat pada ${formatSchedule(booking.scheduled_at)}. Token kelola booking: ${booking.public_token}.`
   }
