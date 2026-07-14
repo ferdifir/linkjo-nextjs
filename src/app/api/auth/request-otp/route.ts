@@ -1,11 +1,11 @@
 import { prisma } from '@/lib/prisma'
 import { generateOTP } from '@/lib/auth'
-import { sendWA } from '@/lib/fonnte'
 import { randomUUID } from 'crypto'
 import { normalizePhone } from '@/lib/validation'
 import { checkRateLimit, clientIp, rateLimitResponse } from '@/lib/rate-limit'
 import { createOwnerVerificationIntent } from '@/lib/whatsapp-intents'
 import { logger, maskPhone } from '@/lib/logger'
+import { sendWhatsappMessage } from '@/lib/whatsapp-provider'
 
 export async function POST(req: Request) {
   const body = await req.json()
@@ -48,7 +48,7 @@ export async function POST(req: Request) {
     data: { id: otpId, phone, code, expiresAt: new Date(Date.now() + 300000) },
   })
 
-  const result = await sendWA(phone, `Kode OTP Linkjo kamu: ${code}. Berlaku 5 menit.`)
+  const result = await sendWhatsappMessage(phone, `Kode OTP Linkjo kamu: ${code}. Berlaku 5 menit.`)
   if (!result.success) {
     logger.warn({
       event: "auth.otp.send_failed",

@@ -62,7 +62,8 @@ export const ModelName = {
   Template: 'Template',
   AuditEvent: 'AuditEvent',
   WhatsappIntent: 'WhatsappIntent',
-  WhatsappConversationState: 'WhatsappConversationState'
+  WhatsappConversationState: 'WhatsappConversationState',
+  WhatsappOutboundMessage: 'WhatsappOutboundMessage'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -254,6 +255,24 @@ export const WhatsappConversationStateScalarFieldEnum = {
 } as const
 
 export type WhatsappConversationStateScalarFieldEnum = (typeof WhatsappConversationStateScalarFieldEnum)[keyof typeof WhatsappConversationStateScalarFieldEnum]
+
+
+export const WhatsappOutboundMessageScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  target: 'target',
+  message: 'message',
+  provider: 'provider',
+  status: 'status',
+  attempts: 'attempts',
+  lastError: 'lastError',
+  lockedAt: 'lockedAt',
+  sentAt: 'sentAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type WhatsappOutboundMessageScalarFieldEnum = (typeof WhatsappOutboundMessageScalarFieldEnum)[keyof typeof WhatsappOutboundMessageScalarFieldEnum]
 
 
 export const SortOrder = {

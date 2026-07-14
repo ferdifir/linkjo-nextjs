@@ -1,5 +1,5 @@
-import { isFonnteReady } from '@/lib/fonnte'
+import { readWhatsappStatus } from "@/lib/whatsapp-status"
 
 export async function GET() {
-  return Response.json({ connected: isFonnteReady(), provider: 'fonnte' })
+  return Response.json(await readWhatsappStatus())
 }

@@ -21,7 +21,7 @@ RSYNC_RSH="ssh -p $VPS_PORT"
 echo "Deploying $APP_NAME release $RELEASE_ID to $VPS_HOST"
 
 "${SSH[@]}" "set -euo pipefail
-mkdir -p '$REMOTE_ROOT/releases' '$REMOTE_ROOT/shared'
+mkdir -p '$REMOTE_ROOT/releases' '$REMOTE_ROOT/shared' '$REMOTE_ROOT/shared/baileys-auth'
 test -f '$REMOTE_ROOT/shared/.env'
 mkdir -p '$REMOTE_RELEASE'
 "
@@ -54,6 +54,10 @@ npx prisma generate
 npx prisma migrate deploy
 npm run build
 
+set -a
+. "$REMOTE_ROOT/shared/.env"
+set +a
+
 cat > "$REMOTE_ROOT/ecosystem.config.cjs" <<EOF
 module.exports = {
   apps: [
@@ -66,6 +70,18 @@ module.exports = {
         NODE_ENV: "production",
       },
     },
+    {
+      name: "linkjo-wa-worker",
+      script: "node_modules/.bin/tsx",
+      args: "src/workers/whatsapp-baileys-worker.ts",
+      cwd: "$REMOTE_ROOT/current",
+      env: {
+        NODE_ENV: "production",
+        WHATSAPP_SHARED_DIR: "$REMOTE_ROOT/shared",
+        WHATSAPP_BAILEYS_AUTH_DIR: "$REMOTE_ROOT/shared/baileys-auth",
+        WHATSAPP_STATUS_PATH: "$REMOTE_ROOT/shared/whatsapp-status.json",
+      },
+    },
   ],
 }
 EOF
@@ -73,9 +89,19 @@ EOF
 ln -sfn "$REMOTE_RELEASE" "$REMOTE_ROOT/current"
 
 if pm2 describe "$APP_NAME" >/dev/null 2>&1; then
-  pm2 reload "$REMOTE_ROOT/ecosystem.config.cjs" --update-env
+  pm2 reload "$REMOTE_ROOT/ecosystem.config.cjs" --only "$APP_NAME" --update-env
 else
-  pm2 start "$REMOTE_ROOT/ecosystem.config.cjs" --update-env
+  pm2 start "$REMOTE_ROOT/ecosystem.config.cjs" --only "$APP_NAME" --update-env
+fi
+
+if [ "${WHATSAPP_PROVIDER:-fonnte}" = "baileys" ]; then
+  if pm2 describe linkjo-wa-worker >/dev/null 2>&1; then
+    pm2 reload linkjo-wa-worker --update-env
+  else
+    pm2 start "$REMOTE_ROOT/ecosystem.config.cjs" --only linkjo-wa-worker --update-env
+  fi
+else
+  pm2 delete linkjo-wa-worker >/dev/null 2>&1 || true
 fi
 pm2 save
 

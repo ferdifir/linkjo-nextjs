@@ -25,6 +25,7 @@ model Tenant {
   templates      Template[]
   whatsappIntents WhatsappIntent[]
   whatsappConversationStates WhatsappConversationState[]
+  whatsappOutboundMessages WhatsappOutboundMessage[]
   auditEvents    AuditEvent[]
 
   @@map("tenants")
@@ -205,6 +206,26 @@ model WhatsappConversationState {
   @@unique([tenantId, phone])
   @@index([tenantId, lastInteractionAt])
   @@map("whatsapp_conversation_states")
+}
+
+model WhatsappOutboundMessage {
+  id          String    @id @default(cuid())
+  tenantId    String?   @map("tenant_id")
+  target      String
+  message     String
+  provider    String    @default("baileys")
+  status      String    @default("pending")
+  attempts    Int       @default(0)
+  lastError   String?   @map("last_error")
+  lockedAt    DateTime? @map("locked_at")
+  sentAt      DateTime? @map("sent_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  tenant      Tenant?   @relation(fields: [tenantId], references: [id], onDelete: SetNull)
+
+  @@index([status, createdAt])
+  @@index([tenantId, createdAt])
+  @@map("whatsapp_outbound_messages")
 }
 
 enum QueueStatus {

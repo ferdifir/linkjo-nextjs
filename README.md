@@ -29,6 +29,7 @@ JWT_SECRET="long-random-secret"
 FONNTE_API_KEY="..."
 WA_WEBHOOK_SECRET="shared-secret-for-x-webhook-secret"
 NEXT_PUBLIC_PUBLIC_APP_URL="https://linkjo.co"
+WHATSAPP_PROVIDER="fonnte"
 ```
 
 Optional:
@@ -36,9 +37,12 @@ Optional:
 ```bash
 GROQ_API_KEY="..."
 GROQ_MODEL="llama-3.1-8b-instant"
+WHATSAPP_SHARED_DIR="/var/www/linkjo-next/shared"
+WHATSAPP_BAILEYS_AUTH_DIR="/var/www/linkjo-next/shared/baileys-auth"
+WHATSAPP_STATUS_PATH="/var/www/linkjo-next/shared/whatsapp-status.json"
 ```
 
-`JWT_SECRET` and `WA_WEBHOOK_SECRET` are mandatory in production. `WA_WEBHOOK_SECRET` is an application-level guard for inbound webhook URLs, not a Fonnte credential. OTP and customer notifications are sent through Fonnte. `NEXT_PUBLIC_PUBLIC_APP_URL` is used for canonical public tenant URLs, clickable account links, and QR codes. If `GROQ_API_KEY` is not set, the WhatsApp webhook still handles queue and booking commands with deterministic fallback replies.
+`JWT_SECRET` and `WA_WEBHOOK_SECRET` are mandatory in production. `WA_WEBHOOK_SECRET` is an application-level guard for inbound webhook URLs, not a Fonnte credential. `WHATSAPP_PROVIDER` defaults to `fonnte`; set it to `baileys` to route outbound WhatsApp messages through the Baileys worker outbox. `NEXT_PUBLIC_PUBLIC_APP_URL` is used for canonical public tenant URLs, clickable account links, and QR codes. If `GROQ_API_KEY` is not set, the WhatsApp inbound handler still handles queue and booking commands with deterministic fallback replies.
 
 ## Database
 
@@ -48,7 +52,7 @@ Apply migrations before running production:
 npx prisma migrate deploy
 ```
 
-The schema includes tenant-isolated queue numbers, public bookings, chat history, templates, and typed queue/booking statuses.
+The schema includes tenant-isolated queue numbers, public bookings, chat history, templates, WhatsApp conversation state, WhatsApp outbound outbox, audit events, and typed queue/booking statuses.
 
 Queue numbers reset daily per tenant using the Asia/Jakarta business date. Apply the latest migration before production deploy so historical queue rows receive `queue_date` and the daily unique index is created.
 
@@ -82,7 +86,26 @@ After signup and onboarding, each tenant gets a public page:
 
 Customers do not log in. They enter their name and WhatsApp number to receive queue or booking notifications.
 
-## WhatsApp Webhook
+## WhatsApp Integration
+
+Linkjo uses one global system WhatsApp number. Tenant routing for customer replies is based on trusted Linkjo context: owner verification intents and `WhatsappConversationState` seeded by previous Linkjo notifications.
+
+Supported providers:
+
+- `fonnte`: HTTP send API plus the global inbound webhook below.
+- `baileys`: long-running worker process using WhatsApp linked-device session.
+
+When `WHATSAPP_PROVIDER=baileys`, outbound messages are written to `whatsapp_outbound_messages`; the `linkjo-wa-worker` PM2 process sends them through the active Baileys socket. Baileys auth/session files must live in a shared persistent directory, not inside a release folder.
+
+Run the worker locally with:
+
+```bash
+npm run wa:worker
+```
+
+Production deploy manages the worker as PM2 app `linkjo-wa-worker` only when `WHATSAPP_PROVIDER=baileys`.
+
+## Fonnte Webhook
 
 Inbound webhook endpoint:
 
@@ -111,7 +134,7 @@ If the webhook provider supports custom headers, the secret can also be sent as:
 x-webhook-secret: <secret>
 ```
 
-Do not configure one webhook URL per tenant. Tenant routing for WhatsApp replies uses trusted Linkjo context such as inbound verification intents and stored customer conversation state from prior Linkjo notifications.
+Do not configure one webhook URL per tenant. The URL is global.
 
 Supported commands include taking a queue number, checking queue status, canceling an active queue, and creating a booking with:
 

@@ -69,9 +69,11 @@ WHATSAPP_PROVIDER=baileys
 Supported providers during migration:
 
 - `fonnte`: existing HTTP API sender, kept for rollback and compatibility.
-- `baileys`: worker-backed sender.
+- `baileys`: worker-backed sender using a database outbox.
 
 The abstraction prevents business modules such as notifications and AI handlers from importing `src/lib/fonnte.ts` directly.
+
+When `WHATSAPP_PROVIDER=baileys`, the Next.js process does not try to access the worker socket directly. It writes outbound messages to `whatsapp_outbound_messages`; the worker claims pending rows and sends them through the active Baileys socket. This keeps the socket owned by one long-running process and makes restarts safer.
 
 ### 3. Baileys Worker
 
@@ -97,7 +99,7 @@ Responsibilities:
 - Ignore group, broadcast, newsletter, status, and self-sent messages.
 - Normalize sender phone and text body.
 - Call the reusable business message handler.
-- Send replies through the Baileys socket.
+- Send pending outbox messages through the Baileys socket.
 - Log connection lifecycle and message handling results.
 
 ## Runtime State
@@ -127,6 +129,20 @@ Status fields:
 - `updatedAt`
 
 This keeps the first migration small and avoids adding a DB model only for worker health.
+
+Outbound WhatsApp messages use a database outbox table:
+
+- `target`
+- `message`
+- `provider`
+- `status`
+- `attempts`
+- `lastError`
+- `lockedAt`
+- `sentAt`
+- timestamps
+
+The worker polls pending Baileys rows, marks successful sends as `sent`, and retries failures until the configured attempt limit is reached.
 
 ## API Changes
 
@@ -181,7 +197,7 @@ The worker must not be started in environments where `WHATSAPP_PROVIDER` is not 
 
 Expected behaviors:
 
-- If Baileys is disconnected, send attempts fail with a structured log and return `{ success: false }`.
+- If Baileys is disconnected, new messages remain pending in the outbox until the worker reconnects.
 - If QR pairing is required, worker logs a clear status and keeps running.
 - If a message is unsupported or from a group/status/broadcast, worker ignores it and logs at debug level.
 - If business handling fails, worker logs the error and sends a short generic failure reply only when safe.
@@ -196,7 +212,7 @@ Minimum coverage:
 - Inbound handler routes resolved tenant messages to `handleInboundCustomerMessage`.
 - Webhook route delegates to the inbound handler and preserves secret/rate-limit checks.
 - Provider abstraction sends through Fonnte when configured.
-- Provider abstraction fails clearly when Baileys provider is selected but worker/socket is unavailable.
+- Provider abstraction enqueues outbound rows when Baileys provider is selected.
 - Baileys message parser extracts text from supported personal chat messages.
 - Baileys message parser ignores group/status/broadcast/self messages.
 - Status API returns Baileys status from the shared status file.

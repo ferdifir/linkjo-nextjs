@@ -1,11 +1,11 @@
 import { cancelBooking, createBooking, rescheduleBooking } from "@/lib/bookings"
-import { sendWA } from "@/lib/fonnte"
 import { createQueueEntry, estimateWaitMinutes, queueDateFor } from "@/lib/queue"
 import { cleanText, normalizePhone } from "@/lib/validation"
 import { prisma } from "@/lib/prisma"
 import { formatServices, resolveServiceMatch } from "@/lib/services"
 import { answerWithWhatsappAgent } from "@/lib/whatsapp-agent"
 import { auditEvent } from "@/lib/audit"
+import { sendWhatsappMessage } from "@/lib/whatsapp-provider"
 
 type TenantProfile = {
   id: string
@@ -39,7 +39,7 @@ export async function handleInboundCustomerMessage(input: {
   const reply = actionReply ?? await answerWithWhatsappAgent({ tenant: input.tenant, phone, message })
 
   await writeHistory(input.tenant.id, phone, "assistant", reply)
-  await sendWA(phone, reply)
+  await sendWhatsappMessage(phone, reply, { tenantId: input.tenant.id })
   return { reply }
 }
 

@@ -1,6 +1,6 @@
-import { sendWA } from "@/lib/fonnte"
 import { DEFAULT_TEMPLATES } from "@/lib/message-templates"
 import { prisma } from "@/lib/prisma"
+import { sendWhatsappMessage } from "@/lib/whatsapp-provider"
 
 export async function notifyQueueCreated(tenantId: string, phone: string | null, no: number, estimatedWaitMin: number) {
   if (!phone) return
@@ -9,14 +9,14 @@ export async function notifyQueueCreated(tenantId: string, phone: string | null,
     no,
     estimated_wait_min: estimatedWaitMin,
   })
-  await sendWA(phone, message)
+  await sendWhatsappMessage(phone, message, { tenantId })
 }
 
 export async function notifyQueueCalled(tenantId: string, phone: string | null, no: number) {
   if (!phone) return
   await rememberWhatsappConversation(tenantId, phone)
   const message = await renderTemplate(tenantId, "queue_called", { no })
-  await sendWA(phone, message)
+  await sendWhatsappMessage(phone, message, { tenantId })
 }
 
 export async function notifyBookingCreated(
@@ -26,7 +26,7 @@ export async function notifyBookingCreated(
 ) {
   await rememberWhatsappConversation(tenantId, phone)
   const message = await renderTemplate(tenantId, "booking_created", bookingVariables(booking))
-  await sendWA(phone, message)
+  await sendWhatsappMessage(phone, message, { tenantId })
 }
 
 export async function notifyBookingConfirmed(
@@ -36,7 +36,7 @@ export async function notifyBookingConfirmed(
 ) {
   await rememberWhatsappConversation(tenantId, phone)
   const message = await renderTemplate(tenantId, "booking_confirmed", bookingVariables(booking))
-  await sendWA(phone, message)
+  await sendWhatsappMessage(phone, message, { tenantId })
 }
 
 export async function notifyBookingRescheduled(
@@ -46,13 +46,13 @@ export async function notifyBookingRescheduled(
 ) {
   await rememberWhatsappConversation(tenantId, phone)
   const message = await renderTemplate(tenantId, "booking_rescheduled", bookingVariables(booking))
-  await sendWA(phone, message)
+  await sendWhatsappMessage(phone, message, { tenantId })
 }
 
 export async function notifyBookingCancelled(tenantId: string, phone: string, bookingId: string) {
   await rememberWhatsappConversation(tenantId, phone)
   const message = await renderTemplate(tenantId, "booking_cancelled", { booking_id: bookingId })
-  await sendWA(phone, message)
+  await sendWhatsappMessage(phone, message, { tenantId })
 }
 
 export async function getTenantTemplates(tenantId: string) {

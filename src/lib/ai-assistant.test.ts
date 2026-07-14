@@ -56,6 +56,6 @@ describe("handleInboundCustomerMessage", () => {
     expect(result.reply).toContain("Hair Coloring")
     expect(result.reply).toContain("Hair Treatment")
     expect(agentMock.answerWithWhatsappAgent).not.toHaveBeenCalled()
-    expect(fonnteMock.sendWA).toHaveBeenCalledWith("628123456789", result.reply)
+    expect(fonnteMock.sendWA).toHaveBeenCalledWith("628123456789", result.reply, { tenantId: "tenant_1" })
   })
 })

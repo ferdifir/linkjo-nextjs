@@ -108,7 +108,11 @@ describe("WhatsApp webhook", () => {
 
     expect(res.status).toBe(200)
     expect(body.reply).toContain("Saya belum tahu")
-    expect(fonnteMock.sendWA).toHaveBeenCalledWith("628123456789", expect.stringContaining("Saya belum tahu"))
+    expect(fonnteMock.sendWA).toHaveBeenCalledWith(
+      "628123456789",
+      expect.stringContaining("Saya belum tahu"),
+      undefined,
+    )
     expect(prismaMock.tenant.findFirst).not.toHaveBeenCalled()
     expect(assistantMock.handleInboundCustomerMessage).not.toHaveBeenCalled()
   })

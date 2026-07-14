@@ -34,8 +34,11 @@ fi
 
 ln -sfn "$RELEASE_PATH" "$REMOTE_ROOT/current"
 
-if [ ! -f "$REMOTE_ROOT/ecosystem.config.cjs" ]; then
-  cat > "$REMOTE_ROOT/ecosystem.config.cjs" <<EOF
+set -a
+. "$REMOTE_ROOT/shared/.env"
+set +a
+
+cat > "$REMOTE_ROOT/ecosystem.config.cjs" <<EOF
 module.exports = {
   apps: [
     {
@@ -47,12 +50,34 @@ module.exports = {
         NODE_ENV: "production",
       },
     },
+    {
+      name: "linkjo-wa-worker",
+      script: "node_modules/.bin/tsx",
+      args: "src/workers/whatsapp-baileys-worker.ts",
+      cwd: "$REMOTE_ROOT/current",
+      env: {
+        NODE_ENV: "production",
+        WHATSAPP_SHARED_DIR: "$REMOTE_ROOT/shared",
+        WHATSAPP_BAILEYS_AUTH_DIR: "$REMOTE_ROOT/shared/baileys-auth",
+        WHATSAPP_STATUS_PATH: "$REMOTE_ROOT/shared/whatsapp-status.json",
+      },
+    },
   ],
 }
 EOF
-fi
 
-pm2 reload "$REMOTE_ROOT/ecosystem.config.cjs" --update-env || pm2 start "$REMOTE_ROOT/ecosystem.config.cjs" --update-env
+pm2 reload "$REMOTE_ROOT/ecosystem.config.cjs" --only "$APP_NAME" --update-env \
+  || pm2 start "$REMOTE_ROOT/ecosystem.config.cjs" --only "$APP_NAME" --update-env
+
+if [ "${WHATSAPP_PROVIDER:-fonnte}" = "baileys" ] && [ -f "$REMOTE_ROOT/current/src/workers/whatsapp-baileys-worker.ts" ]; then
+  if pm2 describe linkjo-wa-worker >/dev/null 2>&1; then
+    pm2 reload linkjo-wa-worker --update-env
+  else
+    pm2 start "$REMOTE_ROOT/ecosystem.config.cjs" --only linkjo-wa-worker --update-env
+  fi
+else
+  pm2 delete linkjo-wa-worker >/dev/null 2>&1 || true
+fi
 pm2 save
 
 ready=0

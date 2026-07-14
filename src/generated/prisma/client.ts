@@ -101,3 +101,8 @@ export type WhatsappIntent = Prisma.WhatsappIntentModel
  * 
  */
 export type WhatsappConversationState = Prisma.WhatsappConversationStateModel
+/**
+ * Model WhatsappOutboundMessage
+ * 
+ */
+export type WhatsappOutboundMessage = Prisma.WhatsappOutboundMessageModel
