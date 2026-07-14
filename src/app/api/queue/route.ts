@@ -25,7 +25,7 @@ export async function POST(req: Request) {
     const body = await req.json()
 
     try {
-      const entry = await createQueueEntry(tenant_id, body)
+      const entry = await createQueueEntry(tenant_id, body, { allowWalkIn: true })
       return Response.json(entry, { status: 201 })
     } catch (err) {
       return Response.json(

@@ -54,17 +54,19 @@ export async function estimateWaitMinutes(tenantId: string): Promise<number> {
 
 export async function createQueueEntry(
   tenantId: string,
-  input: { nama: unknown; phone?: unknown },
+  input: { nama?: unknown; phone?: unknown; walk_in?: unknown },
+  options: { allowWalkIn?: boolean } = {},
 ): Promise<QueueEntryResult> {
+  const walkIn = options.allowWalkIn === true && input.walk_in === true
   const nama = cleanText(input.nama, 80)
-  const phone = input.phone === undefined ? null : normalizePhone(input.phone)
+  const phone = walkIn || input.phone === undefined ? null : normalizePhone(input.phone)
   const queueDate = queueDateFor()
 
-  if (!nama) {
+  if (!walkIn && !nama) {
     throw new Error("nama pelanggan harus diisi")
   }
 
-  if (input.phone !== undefined && !phone) {
+  if (!walkIn && input.phone !== undefined && !phone) {
     throw new Error("nomor WhatsApp tidak valid")
   }
 
@@ -77,9 +79,10 @@ export async function createQueueEntry(
       select: { noAntrian: true },
     })
     const nextNo = (max?.noAntrian ?? 0) + 1
+    const customerName = walkIn ? `Pelanggan #${nextNo}` : nama
 
     return tx.antrian.create({
-      data: { tenantId, noAntrian: nextNo, queueDate, nama, phone },
+      data: { tenantId, noAntrian: nextNo, queueDate, nama: customerName, phone },
       select: { noAntrian: true, nama: true, phone: true, status: true },
     })
   })

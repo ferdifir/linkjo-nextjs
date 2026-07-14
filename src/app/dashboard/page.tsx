@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input"
 import { Card } from "@/components/ui/card"
 import { api } from "@/lib/api"
 import { useAuth } from "@/contexts/auth-context"
-import { Plus, Check, X, CheckCheck, BarChart3, Settings, LogOut, Loader2, CalendarClock } from "lucide-react"
+import { Plus, Check, X, CheckCheck, BarChart3, Settings, LogOut, Loader2, CalendarClock, UserPlus } from "lucide-react"
 import { toast } from "sonner"
 
 type QueueItem = {
@@ -38,6 +38,7 @@ export default function DashboardPage() {
   const [newName, setNewName] = useState("")
   const [newPhone, setNewPhone] = useState("")
   const [adding, setAdding] = useState(false)
+  const [addingWalkIn, setAddingWalkIn] = useState(false)
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
   async function fetchQueue() {
@@ -86,6 +87,18 @@ export default function DashboardPage() {
       toast.error("Gagal menambah antrian")
     } finally {
       setAdding(false)
+    }
+  }
+
+  async function addWalkInQueue() {
+    setAddingWalkIn(true)
+    try {
+      await api("/queue", { method: "POST", body: JSON.stringify({ walk_in: true }) })
+      await fetchQueue()
+    } catch {
+      toast.error("Gagal menambah walk-in")
+    } finally {
+      setAddingWalkIn(false)
     }
   }
 
@@ -298,11 +311,15 @@ export default function DashboardPage() {
 
       {!showAdd && (
         <div className="relative z-10 px-4 py-3">
-          <div className="mx-auto w-full max-w-5xl">
-          <Button className="w-full bg-emerald-400 font-bold text-zinc-950 shadow-lg shadow-emerald-500/20 hover:bg-emerald-400/90" onClick={() => setShowAdd(true)}>
-            <Plus className="size-4 mr-2" />
-            Tambah Antrian
-          </Button>
+          <div className="mx-auto grid w-full max-w-5xl grid-cols-1 gap-2 sm:grid-cols-[1fr_auto]">
+            <Button className="bg-emerald-400 font-bold text-zinc-950 shadow-lg shadow-emerald-500/20 hover:bg-emerald-400/90" onClick={addWalkInQueue} disabled={addingWalkIn}>
+              {addingWalkIn ? <Loader2 className="mr-2 size-4 animate-spin" /> : <UserPlus className="mr-2 size-4" />}
+              Tambah Walk-in
+            </Button>
+            <Button variant="outline" className="border-white/10 bg-zinc-900 font-semibold text-zinc-300 hover:bg-zinc-800 hover:text-white" onClick={() => setShowAdd(true)}>
+              <Plus className="mr-2 size-4" />
+              Tambah Manual
+            </Button>
           </div>
         </div>
       )}

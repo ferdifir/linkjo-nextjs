@@ -41,7 +41,7 @@ export async function POST(req: Request) {
   if (!tenantSlug || !SLUG_PATTERN.test(tenantSlug)) {
     return Response.json({
       success: true,
-      reply: "Silakan mulai dari link bisnis Linkjo agar pesan Anda terhubung ke tenant yang benar.",
+      reply: fallbackReply(message),
     })
   }
 
@@ -68,4 +68,22 @@ export async function POST(req: Request) {
 
   const result = await handleInboundCustomerMessage({ tenant, from, message })
   return Response.json({ success: true, reply: result.reply })
+}
+
+function fallbackReply(message: string) {
+  const lower = message.toLowerCase()
+  const asksAboutLinkjo = /\b(linkjo|ini apa|apa itu|siapa ini|fitur|harga|biaya|cara pakai|daftar)\b/.test(lower)
+
+  if (asksAboutLinkjo) {
+    return [
+      "Halo, ini Linkjo.",
+      "Linkjo membantu usaha mengelola antrean, booking, dan pesan pelanggan lewat WhatsApp.",
+      "Untuk menghubungi bisnis tertentu, silakan mulai dari link bisnis Linkjo yang diberikan owner, misalnya linkjo.my.id/nama-bisnis.",
+    ].join("\n\n")
+  }
+
+  return [
+    "Saya belum tahu Anda sedang menghubungi bisnis yang mana.",
+    "Silakan mulai dari link bisnis Linkjo yang diberikan owner, misalnya linkjo.my.id/nama-bisnis, supaya pesan Anda terhubung ke tenant yang benar.",
+  ].join("\n\n")
 }
