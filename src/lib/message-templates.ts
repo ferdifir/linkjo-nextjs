@@ -4,6 +4,7 @@ export const DEFAULT_TEMPLATES: Record<string, string> = {
   booking_created: "Booking #{booking_id} untuk {service} sudah masuk pada {scheduled_at}. Token kelola booking: {public_token}. Simpan token ini untuk jadwal ulang atau pembatalan.",
   booking_rescheduled: "Booking #{booking_id} untuk {service} dijadwalkan ulang ke {scheduled_at}.",
   booking_cancelled: "Booking #{booking_id} sudah dibatalkan.",
+  whatsapp_intent: "LINKJO {context_code}",
 }
 
 export const TEMPLATE_LABELS: Record<string, string> = {
@@ -12,6 +13,7 @@ export const TEMPLATE_LABELS: Record<string, string> = {
   booking_created: "Booking dibuat",
   booking_rescheduled: "Booking dijadwalkan ulang",
   booking_cancelled: "Booking dibatalkan",
+  whatsapp_intent: "Verifikasi WhatsApp",
 }
 
 export type MessageTemplate = {

@@ -1,11 +1,10 @@
 import { cancelBooking, createBooking, rescheduleBooking } from "@/lib/bookings"
 import { sendWA } from "@/lib/fonnte"
 import { createQueueEntry, estimateWaitMinutes, queueDateFor } from "@/lib/queue"
-import { buildTenantSystemPrompt, getGroqApiKey } from "@/lib/tenant-prompt"
 import { cleanText, normalizePhone } from "@/lib/validation"
 import { prisma } from "@/lib/prisma"
-import { formatOperationalHours } from "@/lib/operational-hours"
 import { findMatchingService, formatServices } from "@/lib/services"
+import { answerWithWhatsappAgent } from "@/lib/whatsapp-agent"
 
 type TenantProfile = {
   id: string
@@ -36,7 +35,7 @@ export async function handleInboundCustomerMessage(input: {
   await writeHistory(input.tenant.id, phone, "user", message)
 
   const actionReply = await tryBusinessAction(input.tenant, phone, message)
-  const reply = actionReply ?? await answerFaq(input.tenant, message)
+  const reply = actionReply ?? await answerWithWhatsappAgent({ tenant: input.tenant, phone, message })
 
   await writeHistory(input.tenant.id, phone, "assistant", reply)
   await sendWA(phone, reply)
@@ -121,54 +120,6 @@ async function tryBusinessAction(tenant: TenantProfile, phone: string, message: 
   }
 
   return null
-}
-
-async function answerFaq(tenant: TenantProfile, message: string) {
-  const apiKey = getGroqApiKey()
-  const operationalHours = formatOperationalHours(tenant.operationalHours)
-  if (!apiKey) {
-    return [
-      `${tenant.name}:`,
-      tenant.description ? `Deskripsi: ${tenant.description}` : null,
-      operationalHours ? `Jam operasional: ${operationalHours}` : null,
-      formatServices(tenant.services) ? `Layanan: ${formatServices(tenant.services)}` : null,
-      "Ketik 'ambil antrian' untuk masuk antrian atau 'booking <layanan> <YYYY-MM-DD> <HH:mm>' untuk membuat booking.",
-    ].filter(Boolean).join("\n")
-  }
-
-  try {
-    const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: process.env.GROQ_MODEL || "llama-3.1-8b-instant",
-        messages: [
-          { role: "system", content: buildTenantSystemPrompt(tenant) },
-          { role: "user", content: message },
-        ],
-        temperature: 0.2,
-        max_tokens: 300,
-      }),
-    })
-    if (!res.ok) throw new Error(await res.text())
-    const data = await res.json()
-    return cleanText(data.choices?.[0]?.message?.content, 1200) || fallbackFaq(tenant)
-  } catch {
-    return fallbackFaq(tenant)
-  }
-}
-
-function fallbackFaq(tenant: TenantProfile) {
-  const operationalHours = formatOperationalHours(tenant.operationalHours)
-  return [
-    `Saya asisten ${tenant.name}.`,
-    operationalHours ? `Jam operasional: ${operationalHours}.` : null,
-    formatServices(tenant.services) ? `Layanan: ${formatServices(tenant.services)}.` : null,
-    "Ketik 'ambil antrian' untuk masuk antrian atau gunakan format booking <layanan> <YYYY-MM-DD> <HH:mm>.",
-  ].filter(Boolean).join(" ")
 }
 
 function extractName(message: string) {

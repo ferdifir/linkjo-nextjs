@@ -6,23 +6,30 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useAuth } from "@/contexts/auth-context"
-import { Loader2, Sparkles, ArrowLeft, ChevronRight } from "lucide-react"
+import { Loader2, Sparkles, ArrowLeft, ChevronRight, MessageCircle } from "lucide-react"
 import { toast } from "sonner"
 import { validateSlug } from "@/lib/validation"
 import { publicAppHost } from "@/lib/public-url"
 
-type Step = "phone" | "otp" | "username"
+type Step = "phone" | "whatsapp" | "otp" | "username"
 const RESERVED_SLUG_KEY = "linkjo_reserved_slug"
 
 export default function AuthPage() {
   const router = useRouter()
-  const { user, loading: authLoading, requestOTP, verifyOTP, claimUsername } = useAuth()
+  const { user, loading: authLoading, requestOTP, checkWhatsappAuth, verifyOTP, claimUsername } = useAuth()
   const [step, setStep] = useState<Step>("phone")
   const [phone, setPhone] = useState("")
   const [code, setCode] = useState("")
   const [username, setUsername] = useState("")
   const [loading, setLoading] = useState(false)
   const [countdown, setCountdown] = useState(0)
+  const [whatsappIntent, setWhatsappIntent] = useState<{
+    id: string
+    contextCode: string
+    message: string
+    waLink: string
+    expiresAt: string
+  } | null>(null)
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const visibleStep = user && !user.username ? "username" : step
   const publicHost = publicAppHost()
@@ -45,6 +52,40 @@ export default function AuthPage() {
   }, [countdown])
 
   useEffect(() => {
+    if (step !== "whatsapp" || !whatsappIntent) return
+    let active = true
+    const interval = setInterval(async () => {
+      try {
+        const res = await checkWhatsappAuth(whatsappIntent.id)
+        if (!active) return
+        if (res.status === "expired") {
+          toast.error("Kode verifikasi WhatsApp expired")
+          setStep("phone")
+          setWhatsappIntent(null)
+          return
+        }
+        if (res.status === "verified") {
+          toast.success("Nomor WhatsApp terverifikasi")
+          if (res.needs_setup) {
+            setStep("username")
+          } else if (!res.setup_completed) {
+            router.replace("/onboarding")
+          } else {
+            router.replace("/dashboard")
+          }
+        }
+      } catch {
+        // Polling errors are transient; the submit action surfaces hard failures.
+      }
+    }, 2500)
+
+    return () => {
+      active = false
+      clearInterval(interval)
+    }
+  }, [checkWhatsappAuth, router, step, whatsappIntent])
+
+  useEffect(() => {
     if (visibleStep !== "username" || username) return
     const reservedSlug = localStorage.getItem(RESERVED_SLUG_KEY)
     if (!reservedSlug) return
@@ -61,7 +102,7 @@ export default function AuthPage() {
     router.replace(user.setup_completed ? "/dashboard" : "/onboarding")
   }, [authLoading, router, user])
 
-  async function handleRequestOTP(e: React.FormEvent) {
+  async function handleRequestWhatsapp(e: React.FormEvent) {
     e.preventDefault()
     if (!phone.trim()) {
       toast.error("Nomor HP harus diisi")
@@ -69,7 +110,28 @@ export default function AuthPage() {
     }
     setLoading(true)
     try {
-      await requestOTP(phone)
+      const intent = await requestOTP(phone, "whatsapp")
+      if (!intent || intent.mode !== "whatsapp") throw new Error("gagal membuat verifikasi WhatsApp")
+      setWhatsappIntent(intent)
+      setStep("whatsapp")
+      window.open(intent.waLink, "_blank", "noopener,noreferrer")
+      toast.success("Kirim pesan WhatsApp yang sudah terisi")
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Gagal membuat verifikasi WhatsApp")
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  async function handleRequestOTP(e?: React.FormEvent) {
+    e?.preventDefault()
+    if (!phone.trim()) {
+      toast.error("Nomor HP harus diisi")
+      return
+    }
+    setLoading(true)
+    try {
+      await requestOTP(phone, "otp")
       setStep("otp")
       setCountdown(60)
       toast.success("Kode OTP terkirim via WhatsApp")
@@ -123,9 +185,10 @@ export default function AuthPage() {
   }
 
   function goBack() {
-    if (step === "otp") {
+    if (step === "otp" || step === "whatsapp") {
       setStep("phone")
       setCode("")
+      setWhatsappIntent(null)
     } else if (visibleStep === "username" && !user) {
       setStep("phone")
       setUsername("")
@@ -159,11 +222,13 @@ export default function AuthPage() {
             <div>
               <h1 className="text-2xl font-bold tracking-tight text-white">
                 {visibleStep === "phone" && "Masuk / Daftar"}
+                {visibleStep === "whatsapp" && "Verifikasi WhatsApp"}
                 {visibleStep === "otp" && "Verifikasi OTP"}
                 {visibleStep === "username" && "Pilih Username"}
               </h1>
               <p className="mt-1 text-xs leading-relaxed text-zinc-500">
                 {visibleStep === "phone" && "Masuk pakai nomor WhatsApp."}
+                {visibleStep === "whatsapp" && `Kirim pesan ${whatsappIntent?.contextCode || ""} dari WhatsApp kamu`}
                 {visibleStep === "otp" && `Kode dikirim ke ${phone || user?.phone || ""}`}
                 {visibleStep === "username" && `${publicHost}/{username}`}
               </p>
@@ -173,7 +238,7 @@ export default function AuthPage() {
           {/* Form container */}
           <div className="rounded-2xl border border-white/5 bg-zinc-900/70 p-5 shadow-2xl shadow-black/30 backdrop-blur-sm transition-all sm:p-6">
             {visibleStep === "phone" && (
-              <form onSubmit={handleRequestOTP} className="space-y-4">
+              <form onSubmit={handleRequestWhatsapp} className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="phone" className="text-xs font-medium text-zinc-400">
                     Nomor WhatsApp
@@ -194,9 +259,43 @@ export default function AuthPage() {
                   type="submit"
                   disabled={loading}
                 >
-                  {loading ? <Loader2 className="size-4 animate-spin" /> : "Kirim OTP"}
+                  {loading ? <Loader2 className="size-4 animate-spin" /> : (
+                    <>
+                      <MessageCircle className="mr-2 size-4" />
+                      Verifikasi lewat WhatsApp
+                    </>
+                  )}
                 </Button>
+                <button
+                  type="button"
+                  onClick={() => handleRequestOTP()}
+                  disabled={loading}
+                  className="w-full text-center text-[11px] font-medium text-zinc-500 transition-colors hover:text-zinc-300 disabled:opacity-50"
+                >
+                  Pakai OTP fallback
+                </button>
               </form>
+            )}
+
+            {visibleStep === "whatsapp" && whatsappIntent && (
+              <div className="space-y-4">
+                <div className="rounded-lg border border-white/10 bg-zinc-950/60 p-3">
+                  <p className="text-xs text-zinc-500">Pesan yang harus dikirim</p>
+                  <p className="mt-1 font-mono text-sm font-semibold text-emerald-400">{whatsappIntent.message}</p>
+                </div>
+                <a
+                  href={whatsappIntent.waLink}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="flex h-10 w-full items-center justify-center rounded-lg bg-emerald-400 text-sm font-bold text-zinc-950 shadow-lg shadow-emerald-500/20 transition-all hover:bg-emerald-400/90 active:scale-[0.98]"
+                >
+                  <MessageCircle className="mr-2 size-4" />
+                  Buka WhatsApp
+                </a>
+                <p className="text-center text-[11px] leading-relaxed text-zinc-500">
+                  Setelah pesan terkirim, halaman ini akan lanjut otomatis.
+                </p>
+              </div>
             )}
 
             {visibleStep === "otp" && (

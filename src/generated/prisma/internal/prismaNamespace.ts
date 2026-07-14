@@ -392,7 +392,9 @@ export const ModelName = {
   Service: 'Service',
   RateLimit: 'RateLimit',
   History: 'History',
-  Template: 'Template'
+  Template: 'Template',
+  WhatsappIntent: 'WhatsappIntent',
+  WhatsappConversationState: 'WhatsappConversationState'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -408,7 +410,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "tenant" | "user" | "otpCode" | "antrian" | "booking" | "service" | "rateLimit" | "history" | "template"
+    modelProps: "tenant" | "user" | "otpCode" | "antrian" | "booking" | "service" | "rateLimit" | "history" | "template" | "whatsappIntent" | "whatsappConversationState"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1078,6 +1080,154 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    WhatsappIntent: {
+      payload: Prisma.$WhatsappIntentPayload<ExtArgs>
+      fields: Prisma.WhatsappIntentFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.WhatsappIntentFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WhatsappIntentPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.WhatsappIntentFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WhatsappIntentPayload>
+        }
+        findFirst: {
+          args: Prisma.WhatsappIntentFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WhatsappIntentPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.WhatsappIntentFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WhatsappIntentPayload>
+        }
+        findMany: {
+          args: Prisma.WhatsappIntentFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WhatsappIntentPayload>[]
+        }
+        create: {
+          args: Prisma.WhatsappIntentCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WhatsappIntentPayload>
+        }
+        createMany: {
+          args: Prisma.WhatsappIntentCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.WhatsappIntentCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WhatsappIntentPayload>[]
+        }
+        delete: {
+          args: Prisma.WhatsappIntentDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WhatsappIntentPayload>
+        }
+        update: {
+          args: Prisma.WhatsappIntentUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WhatsappIntentPayload>
+        }
+        deleteMany: {
+          args: Prisma.WhatsappIntentDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.WhatsappIntentUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.WhatsappIntentUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WhatsappIntentPayload>[]
+        }
+        upsert: {
+          args: Prisma.WhatsappIntentUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WhatsappIntentPayload>
+        }
+        aggregate: {
+          args: Prisma.WhatsappIntentAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateWhatsappIntent>
+        }
+        groupBy: {
+          args: Prisma.WhatsappIntentGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.WhatsappIntentGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.WhatsappIntentCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.WhatsappIntentCountAggregateOutputType> | number
+        }
+      }
+    }
+    WhatsappConversationState: {
+      payload: Prisma.$WhatsappConversationStatePayload<ExtArgs>
+      fields: Prisma.WhatsappConversationStateFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.WhatsappConversationStateFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WhatsappConversationStatePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.WhatsappConversationStateFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WhatsappConversationStatePayload>
+        }
+        findFirst: {
+          args: Prisma.WhatsappConversationStateFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WhatsappConversationStatePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.WhatsappConversationStateFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WhatsappConversationStatePayload>
+        }
+        findMany: {
+          args: Prisma.WhatsappConversationStateFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WhatsappConversationStatePayload>[]
+        }
+        create: {
+          args: Prisma.WhatsappConversationStateCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WhatsappConversationStatePayload>
+        }
+        createMany: {
+          args: Prisma.WhatsappConversationStateCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.WhatsappConversationStateCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WhatsappConversationStatePayload>[]
+        }
+        delete: {
+          args: Prisma.WhatsappConversationStateDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WhatsappConversationStatePayload>
+        }
+        update: {
+          args: Prisma.WhatsappConversationStateUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WhatsappConversationStatePayload>
+        }
+        deleteMany: {
+          args: Prisma.WhatsappConversationStateDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.WhatsappConversationStateUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.WhatsappConversationStateUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WhatsappConversationStatePayload>[]
+        }
+        upsert: {
+          args: Prisma.WhatsappConversationStateUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WhatsappConversationStatePayload>
+        }
+        aggregate: {
+          args: Prisma.WhatsappConversationStateAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateWhatsappConversationState>
+        }
+        groupBy: {
+          args: Prisma.WhatsappConversationStateGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.WhatsappConversationStateGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.WhatsappConversationStateCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.WhatsappConversationStateCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -1241,12 +1391,55 @@ export const TemplateScalarFieldEnum = {
 export type TemplateScalarFieldEnum = (typeof TemplateScalarFieldEnum)[keyof typeof TemplateScalarFieldEnum]
 
 
+export const WhatsappIntentScalarFieldEnum = {
+  id: 'id',
+  token: 'token',
+  tenantId: 'tenantId',
+  purpose: 'purpose',
+  phoneExpected: 'phoneExpected',
+  payload: 'payload',
+  expiresAt: 'expiresAt',
+  consumedAt: 'consumedAt',
+  createdAt: 'createdAt'
+} as const
+
+export type WhatsappIntentScalarFieldEnum = (typeof WhatsappIntentScalarFieldEnum)[keyof typeof WhatsappIntentScalarFieldEnum]
+
+
+export const WhatsappConversationStateScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  phone: 'phone',
+  pendingIntent: 'pendingIntent',
+  pendingServiceId: 'pendingServiceId',
+  pendingScheduledAt: 'pendingScheduledAt',
+  pendingCustomerName: 'pendingCustomerName',
+  pendingBookingId: 'pendingBookingId',
+  pendingBookingToken: 'pendingBookingToken',
+  lastMentionedServiceId: 'lastMentionedServiceId',
+  lastBookingId: 'lastBookingId',
+  lastQueueId: 'lastQueueId',
+  lastInteractionAt: 'lastInteractionAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type WhatsappConversationStateScalarFieldEnum = (typeof WhatsappConversationStateScalarFieldEnum)[keyof typeof WhatsappConversationStateScalarFieldEnum]
+
+
 export const SortOrder = {
   asc: 'asc',
   desc: 'desc'
 } as const
 
 export type SortOrder = (typeof SortOrder)[keyof typeof SortOrder]
+
+
+export const JsonNullValueInput = {
+  JsonNull: JsonNull
+} as const
+
+export type JsonNullValueInput = (typeof JsonNullValueInput)[keyof typeof JsonNullValueInput]
 
 
 export const QueryMode = {
@@ -1263,6 +1456,15 @@ export const NullsOrder = {
 } as const
 
 export type NullsOrder = (typeof NullsOrder)[keyof typeof NullsOrder]
+
+
+export const JsonNullValueFilter = {
+  DbNull: DbNull,
+  JsonNull: JsonNull,
+  AnyNull: AnyNull
+} as const
+
+export type JsonNullValueFilter = (typeof JsonNullValueFilter)[keyof typeof JsonNullValueFilter]
 
 
 
@@ -1373,6 +1575,34 @@ export type EnumBookingStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$Pr
  * Reference to a field of type 'BookingStatus[]'
  */
 export type ListEnumBookingStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'BookingStatus[]'>
+    
+
+
+/**
+ * Reference to a field of type 'WhatsappIntentPurpose'
+ */
+export type EnumWhatsappIntentPurposeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'WhatsappIntentPurpose'>
+    
+
+
+/**
+ * Reference to a field of type 'WhatsappIntentPurpose[]'
+ */
+export type ListEnumWhatsappIntentPurposeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'WhatsappIntentPurpose[]'>
+    
+
+
+/**
+ * Reference to a field of type 'Json'
+ */
+export type JsonFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Json'>
+    
+
+
+/**
+ * Reference to a field of type 'QueryMode'
+ */
+export type EnumQueryModeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'QueryMode'>
     
 
 /**
@@ -1494,6 +1724,8 @@ export type GlobalOmitConfig = {
   rateLimit?: Prisma.RateLimitOmit
   history?: Prisma.HistoryOmit
   template?: Prisma.TemplateOmit
+  whatsappIntent?: Prisma.WhatsappIntentOmit
+  whatsappConversationState?: Prisma.WhatsappConversationStateOmit
 }
 
 /* Types for Logging */

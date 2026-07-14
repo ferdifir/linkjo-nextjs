@@ -62,3 +62,13 @@ export type History = Prisma.HistoryModel
  * 
  */
 export type Template = Prisma.TemplateModel
+/**
+ * Model WhatsappIntent
+ * 
+ */
+export type WhatsappIntent = Prisma.WhatsappIntentModel
+/**
+ * Model WhatsappConversationState
+ * 
+ */
+export type WhatsappConversationState = Prisma.WhatsappConversationStateModel

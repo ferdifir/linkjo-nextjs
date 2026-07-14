@@ -27,3 +27,14 @@ export const BookingStatus = {
 } as const
 
 export type BookingStatus = (typeof BookingStatus)[keyof typeof BookingStatus]
+
+
+export const WhatsappIntentPurpose = {
+  VERIFY_OWNER_PHONE: 'VERIFY_OWNER_PHONE',
+  VERIFY_CUSTOMER_PHONE: 'VERIFY_CUSTOMER_PHONE',
+  JOIN_QUEUE: 'JOIN_QUEUE',
+  CREATE_BOOKING: 'CREATE_BOOKING',
+  MANAGE_BOOKING: 'MANAGE_BOOKING'
+} as const
+
+export type WhatsappIntentPurpose = (typeof WhatsappIntentPurpose)[keyof typeof WhatsappIntentPurpose]

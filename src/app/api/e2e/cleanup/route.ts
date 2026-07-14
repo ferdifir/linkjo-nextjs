@@ -18,6 +18,8 @@ export async function POST(req: Request) {
   const tenantIds = Array.from(new Set([user?.tenantId, tenant?.id].filter((id): id is string => Boolean(id))))
   await Promise.all(tenantIds.map((id) => prisma.tenant.delete({ where: { id } })))
   await prisma.otpCode.deleteMany({ where: { phone } })
+  await prisma.whatsappIntent.deleteMany({ where: { phoneExpected: phone } })
+  await prisma.whatsappConversationState.deleteMany({ where: { phone } })
 
   return Response.json({ success: true })
 }

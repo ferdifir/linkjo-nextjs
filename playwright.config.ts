@@ -16,7 +16,7 @@ export default defineConfig({
     trace: "on-first-retry",
   },
   webServer: {
-    command: `npm run build && E2E_TEST_MODE=1 E2E_SKIP_NOTIFICATIONS=1 NEXT_PUBLIC_PUBLIC_APP_URL=http://127.0.0.1:${port} npx next start -p ${port}`,
+    command: `npm run build && E2E_TEST_MODE=1 E2E_SKIP_NOTIFICATIONS=1 WA_WEBHOOK_SECRET=e2e-secret NEXT_PUBLIC_PUBLIC_APP_URL=http://127.0.0.1:${port} npx next start -p ${port}`,
     url: `http://127.0.0.1:${port}`,
     reuseExistingServer: !process.env.CI,
     timeout: 180_000,

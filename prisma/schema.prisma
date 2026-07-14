@@ -23,6 +23,8 @@ model Tenant {
   services       Service[]
   histories      History[]
   templates      Template[]
+  whatsappIntents WhatsappIntent[]
+  whatsappConversationStates WhatsappConversationState[]
 
   @@map("tenants")
 }
@@ -145,6 +147,47 @@ model Template {
   @@map("templates")
 }
 
+model WhatsappIntent {
+  id            String                @id @default(cuid())
+  token         String                @unique
+  tenantId      String?               @map("tenant_id")
+  purpose       WhatsappIntentPurpose
+  phoneExpected String?               @map("phone_expected")
+  payload       Json                  @default("{}")
+  expiresAt     DateTime              @map("expires_at")
+  consumedAt    DateTime?             @map("consumed_at")
+  createdAt     DateTime              @default(now()) @map("created_at")
+  tenant        Tenant?               @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([phoneExpected])
+  @@index([expiresAt])
+  @@map("whatsapp_intents")
+}
+
+model WhatsappConversationState {
+  id                     String    @id @default(cuid())
+  tenantId               String    @map("tenant_id")
+  phone                  String
+  pendingIntent          String?   @map("pending_intent")
+  pendingServiceId       String?   @map("pending_service_id")
+  pendingScheduledAt     DateTime? @map("pending_scheduled_at")
+  pendingCustomerName    String?   @map("pending_customer_name")
+  pendingBookingId       BigInt?   @map("pending_booking_id")
+  pendingBookingToken    String?   @map("pending_booking_token")
+  lastMentionedServiceId String?   @map("last_mentioned_service_id")
+  lastBookingId          BigInt?   @map("last_booking_id")
+  lastQueueId            BigInt?   @map("last_queue_id")
+  lastInteractionAt      DateTime  @default(now()) @map("last_interaction_at")
+  createdAt              DateTime  @default(now()) @map("created_at")
+  updatedAt              DateTime  @updatedAt @map("updated_at")
+  tenant                 Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, phone])
+  @@index([tenantId, lastInteractionAt])
+  @@map("whatsapp_conversation_states")
+}
+
 enum QueueStatus {
   menunggu
   dipanggil
@@ -161,4 +204,14 @@ enum BookingStatus {
   rescheduled
 
   @@map("booking_status")
+}
+
+enum WhatsappIntentPurpose {
+  VERIFY_OWNER_PHONE
+  VERIFY_CUSTOMER_PHONE
+  JOIN_QUEUE
+  CREATE_BOOKING
+  MANAGE_BOOKING
+
+  @@map("whatsapp_intent_purpose")
 }

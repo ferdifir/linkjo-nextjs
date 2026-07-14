@@ -4,6 +4,7 @@ import { sendWA } from '@/lib/fonnte'
 import { randomUUID } from 'crypto'
 import { normalizePhone } from '@/lib/validation'
 import { checkRateLimit, clientIp, rateLimitResponse } from '@/lib/rate-limit'
+import { createOwnerVerificationIntent } from '@/lib/whatsapp-intents'
 
 export async function POST(req: Request) {
   const body = await req.json()
@@ -17,6 +18,16 @@ export async function POST(req: Request) {
 
   const phoneLimit = await checkRateLimit({ key: `otp:phone:${phone}`, limit: 3, windowMs: 60 * 60 * 1000 })
   if (!phoneLimit.allowed) return rateLimitResponse(phoneLimit.resetAt)
+
+  if (body.mode !== "otp") {
+    await prisma.whatsappIntent.updateMany({
+      where: { phoneExpected: phone, purpose: "VERIFY_OWNER_PHONE", consumedAt: null, expiresAt: { gt: new Date() } },
+      data: { expiresAt: new Date() },
+    })
+
+    const intent = await createOwnerVerificationIntent(phone)
+    return Response.json({ success: true, mode: "whatsapp", ...intent })
+  }
 
   const count = await prisma.otpCode.count({
     where: { phone, createdAt: { gte: new Date(Date.now() - 60 * 60 * 1000) } },

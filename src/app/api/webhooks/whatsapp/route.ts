@@ -2,6 +2,7 @@ import { handleInboundCustomerMessage } from "@/lib/ai-assistant"
 import { prisma } from "@/lib/prisma"
 import { cleanText, normalizePhone, SLUG_PATTERN } from "@/lib/validation"
 import { checkRateLimit, clientIp, rateLimitResponse } from "@/lib/rate-limit"
+import { consumeOwnerVerificationIntent, extractWhatsappIntentToken } from "@/lib/whatsapp-intents"
 
 export async function POST(req: Request) {
   const url = new URL(req.url)
@@ -25,11 +26,23 @@ export async function POST(req: Request) {
   const from = normalizePhone(body.from ?? body.sender ?? body.phone ?? body.whatsapp)
   const message = cleanText(body.message ?? body.text ?? body.body, 1000)
 
-  if (!tenantSlug || !SLUG_PATTERN.test(tenantSlug)) {
-    return Response.json({ error: "tenant_slug required" }, { status: 400 })
-  }
   if (!from || !message) {
     return Response.json({ error: "from and message required" }, { status: 400 })
+  }
+
+  const intentToken = extractWhatsappIntentToken(message)
+  if (intentToken) {
+    const result = await consumeOwnerVerificationIntent(intentToken, from)
+    if (result.consumed) {
+      return Response.json({ success: true, handled: "intent" })
+    }
+  }
+
+  if (!tenantSlug || !SLUG_PATTERN.test(tenantSlug)) {
+    return Response.json({
+      success: true,
+      reply: "Silakan mulai dari link bisnis Linkjo agar pesan Anda terhubung ke tenant yang benar.",
+    })
   }
 
   const tenant = await prisma.tenant.findUnique({

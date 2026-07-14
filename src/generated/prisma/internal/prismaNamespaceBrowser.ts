@@ -59,7 +59,9 @@ export const ModelName = {
   Service: 'Service',
   RateLimit: 'RateLimit',
   History: 'History',
-  Template: 'Template'
+  Template: 'Template',
+  WhatsappIntent: 'WhatsappIntent',
+  WhatsappConversationState: 'WhatsappConversationState'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -202,12 +204,55 @@ export const TemplateScalarFieldEnum = {
 export type TemplateScalarFieldEnum = (typeof TemplateScalarFieldEnum)[keyof typeof TemplateScalarFieldEnum]
 
 
+export const WhatsappIntentScalarFieldEnum = {
+  id: 'id',
+  token: 'token',
+  tenantId: 'tenantId',
+  purpose: 'purpose',
+  phoneExpected: 'phoneExpected',
+  payload: 'payload',
+  expiresAt: 'expiresAt',
+  consumedAt: 'consumedAt',
+  createdAt: 'createdAt'
+} as const
+
+export type WhatsappIntentScalarFieldEnum = (typeof WhatsappIntentScalarFieldEnum)[keyof typeof WhatsappIntentScalarFieldEnum]
+
+
+export const WhatsappConversationStateScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  phone: 'phone',
+  pendingIntent: 'pendingIntent',
+  pendingServiceId: 'pendingServiceId',
+  pendingScheduledAt: 'pendingScheduledAt',
+  pendingCustomerName: 'pendingCustomerName',
+  pendingBookingId: 'pendingBookingId',
+  pendingBookingToken: 'pendingBookingToken',
+  lastMentionedServiceId: 'lastMentionedServiceId',
+  lastBookingId: 'lastBookingId',
+  lastQueueId: 'lastQueueId',
+  lastInteractionAt: 'lastInteractionAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type WhatsappConversationStateScalarFieldEnum = (typeof WhatsappConversationStateScalarFieldEnum)[keyof typeof WhatsappConversationStateScalarFieldEnum]
+
+
 export const SortOrder = {
   asc: 'asc',
   desc: 'desc'
 } as const
 
 export type SortOrder = (typeof SortOrder)[keyof typeof SortOrder]
+
+
+export const JsonNullValueInput = {
+  JsonNull: JsonNull
+} as const
+
+export type JsonNullValueInput = (typeof JsonNullValueInput)[keyof typeof JsonNullValueInput]
 
 
 export const QueryMode = {
@@ -224,4 +269,13 @@ export const NullsOrder = {
 } as const
 
 export type NullsOrder = (typeof NullsOrder)[keyof typeof NullsOrder]
+
+
+export const JsonNullValueFilter = {
+  DbNull: DbNull,
+  JsonNull: JsonNull,
+  AnyNull: AnyNull
+} as const
+
+export type JsonNullValueFilter = (typeof JsonNullValueFilter)[keyof typeof JsonNullValueFilter]
 

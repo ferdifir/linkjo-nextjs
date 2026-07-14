@@ -19,11 +19,14 @@ test("signup from slug check, onboard business, then create several queue entrie
 
   await expect(page.getByRole("heading", { name: /Masuk \/ Daftar/i })).toBeVisible()
   await page.getByLabel("Nomor WhatsApp").fill(phone)
-  await page.getByRole("button", { name: /Kirim OTP/i }).click()
+  await page.getByRole("button", { name: /Verifikasi lewat WhatsApp/i }).click()
 
-  const otp = await waitForOtp(page, phone)
-  await page.getByLabel("Kode OTP").fill(otp)
-  await page.getByRole("button", { name: /Verifikasi/i }).click()
+  await expect(page.getByRole("heading", { name: /Verifikasi WhatsApp/i })).toBeVisible()
+  const intent = await waitForWhatsappIntent(page, phone)
+  const webhookResponse = await page.request.post("/api/webhooks/whatsapp?secret=e2e-secret", {
+    data: { from: phone, message: `LINKJO ${intent.token}` },
+  })
+  expect(webhookResponse.ok(), await webhookResponse.text()).toBeTruthy()
 
   await expect(page.getByRole("heading", { name: /Pilih Username/i })).toBeVisible()
   await expect(page.getByLabel("Username bisnis")).toHaveValue(slug)
@@ -66,17 +69,17 @@ test("signup from slug check, onboard business, then create several queue entrie
   await expect(page.getByText("Andi E2E")).toBeVisible()
 })
 
-async function waitForOtp(page: Page, phone: string) {
+async function waitForWhatsappIntent(page: Page, phone: string): Promise<{ id: string; token: string }> {
   const deadline = Date.now() + 10_000
   while (Date.now() < deadline) {
-    const res = await page.request.get(`/api/e2e/otp?phone=${encodeURIComponent(phone)}`)
+    const res = await page.request.get(`/api/e2e/whatsapp-intent?phone=${encodeURIComponent(phone)}`)
     if (res.ok()) {
       const data = await res.json()
-      if (data.code) return data.code
+      if (data.id && data.token) return { id: data.id, token: data.token }
     }
     await new Promise((resolve) => setTimeout(resolve, 250))
   }
-  throw new Error(`OTP not found for ${phone}`)
+  throw new Error(`WhatsApp intent not found for ${phone}`)
 }
 
 function nextCustomerPhone(ownerPhone: string, customerName: string) {
