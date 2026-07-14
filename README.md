@@ -46,9 +46,9 @@ FONNTE_WHATSAPP_NUMBER="628xxxxxxxxxx"
 NEXT_PUBLIC_WHATSAPP_NUMBER="628xxxxxxxxxx"
 GROQ_API_KEY="..."
 GROQ_MODEL="llama-3.1-8b-instant"
-WHATSAPP_SHARED_DIR="/var/www/linkjo-next/shared"
-WHATSAPP_BAILEYS_AUTH_DIR="/var/www/linkjo-next/shared/baileys-auth"
-WHATSAPP_STATUS_PATH="/var/www/linkjo-next/shared/whatsapp-status.json"
+WHATSAPP_SHARED_DIR=".data/whatsapp"
+WHATSAPP_BAILEYS_AUTH_DIR=".data/whatsapp/baileys-auth"
+WHATSAPP_STATUS_PATH=".data/whatsapp/whatsapp-status.json"
 WHATSAPP_OUTBOX_POLL_MS="2000"
 WHATSAPP_OUTBOX_BATCH_SIZE="10"
 BAILEYS_LOG_LEVEL="silent"
@@ -61,6 +61,14 @@ Provider-specific requirements:
 
 - `WHATSAPP_PROVIDER=fonnte`: set `FONNTE_API_KEY`. Keep the global Fonnte webhook URL configured.
 - `WHATSAPP_PROVIDER=baileys`: set `WHATSAPP_SHARED_DIR`, `WHATSAPP_BAILEYS_AUTH_DIR`, and `WHATSAPP_STATUS_PATH`; deploy starts PM2 app `linkjo-wa-worker`, then scan the QR from `pm2 logs linkjo-wa-worker`.
+
+Production VPS Baileys paths:
+
+```bash
+WHATSAPP_SHARED_DIR="/var/www/linkjo-next/shared"
+WHATSAPP_BAILEYS_AUTH_DIR="/var/www/linkjo-next/shared/baileys-auth"
+WHATSAPP_STATUS_PATH="/var/www/linkjo-next/shared/whatsapp-status.json"
+```
 
 ## Database
 
