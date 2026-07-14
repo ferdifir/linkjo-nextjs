@@ -11,6 +11,12 @@ npm install
 npx prisma generate
 ```
 
+Create local environment variables:
+
+```bash
+cp .env.example .env
+```
+
 Run the development server:
 
 ```bash
@@ -26,23 +32,35 @@ Required:
 ```bash
 DATABASE_URL="postgresql://..."
 JWT_SECRET="long-random-secret"
-FONNTE_API_KEY="..."
 WA_WEBHOOK_SECRET="shared-secret-for-x-webhook-secret"
 NEXT_PUBLIC_PUBLIC_APP_URL="https://linkjo.co"
 WHATSAPP_PROVIDER="fonnte"
+WHATSAPP_NUMBER="628xxxxxxxxxx"
 ```
 
 Optional:
 
 ```bash
+FONNTE_API_KEY="..."
+FONNTE_WHATSAPP_NUMBER="628xxxxxxxxxx"
+NEXT_PUBLIC_WHATSAPP_NUMBER="628xxxxxxxxxx"
 GROQ_API_KEY="..."
 GROQ_MODEL="llama-3.1-8b-instant"
 WHATSAPP_SHARED_DIR="/var/www/linkjo-next/shared"
 WHATSAPP_BAILEYS_AUTH_DIR="/var/www/linkjo-next/shared/baileys-auth"
 WHATSAPP_STATUS_PATH="/var/www/linkjo-next/shared/whatsapp-status.json"
+WHATSAPP_OUTBOX_POLL_MS="2000"
+WHATSAPP_OUTBOX_BATCH_SIZE="10"
+BAILEYS_LOG_LEVEL="silent"
+LOG_LEVEL="info"
 ```
 
 `JWT_SECRET` and `WA_WEBHOOK_SECRET` are mandatory in production. `WA_WEBHOOK_SECRET` is an application-level guard for inbound webhook URLs, not a Fonnte credential. `WHATSAPP_PROVIDER` defaults to `fonnte`; set it to `baileys` to route outbound WhatsApp messages through the Baileys worker outbox. `NEXT_PUBLIC_PUBLIC_APP_URL` is used for canonical public tenant URLs, clickable account links, and QR codes. If `GROQ_API_KEY` is not set, the WhatsApp inbound handler still handles queue and booking commands with deterministic fallback replies.
+
+Provider-specific requirements:
+
+- `WHATSAPP_PROVIDER=fonnte`: set `FONNTE_API_KEY`. Keep the global Fonnte webhook URL configured.
+- `WHATSAPP_PROVIDER=baileys`: set `WHATSAPP_SHARED_DIR`, `WHATSAPP_BAILEYS_AUTH_DIR`, and `WHATSAPP_STATUS_PATH`; deploy starts PM2 app `linkjo-wa-worker`, then scan the QR from `pm2 logs linkjo-wa-worker`.
 
 ## Database
 
