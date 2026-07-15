@@ -25,6 +25,21 @@ describe("Baileys message parser", () => {
     expect(parsed?.text).toBe("cek antrian")
   })
 
+  it("extracts text from wrapped ephemeral messages", () => {
+    const parsed = parseBaileysMessage({
+      key: { remoteJid: "628123456789@s.whatsapp.net", fromMe: false },
+      message: {
+        ephemeralMessage: {
+          message: {
+            extendedTextMessage: { text: "halo" },
+          },
+        },
+      },
+    } as WAMessage)
+
+    expect(parsed?.text).toBe("halo")
+  })
+
   it("ignores group, status, broadcast, newsletter, and self messages", () => {
     const ignored = [
       { key: { remoteJid: "1203630@g.us", fromMe: false }, message: { conversation: "halo" } },

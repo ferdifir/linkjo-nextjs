@@ -121,10 +121,11 @@ async function startSocket() {
     for (const message of messages) {
       const parsed = parseBaileysMessage(message)
       if (!parsed) {
-        logger.debug({
+        logger.info({
           event: "whatsapp.worker.message_ignored",
           remote_jid: message.key.remoteJid,
           from_me: message.key.fromMe,
+          message_keys: message.message ? Object.keys(message.message) : [],
         })
         continue
       }

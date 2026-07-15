@@ -30,7 +30,7 @@ export function jidForPhone(phone: string) {
 }
 
 function extractMessageText(message: WAMessage) {
-  const content = message.message
+  const content = unwrapMessageContent(message.message)
   if (!content) return ""
 
   const text =
@@ -45,4 +45,20 @@ function extractMessageText(message: WAMessage) {
     ""
 
   return text.trim()
+}
+
+type BaileysMessageContent = NonNullable<WAMessage["message"]>
+
+function unwrapMessageContent(content: WAMessage["message"]): BaileysMessageContent | null {
+  if (!content) return null
+
+  const wrapped =
+    content.ephemeralMessage?.message ||
+    content.viewOnceMessage?.message ||
+    content.viewOnceMessageV2?.message ||
+    content.viewOnceMessageV2Extension?.message ||
+    content.documentWithCaptionMessage?.message ||
+    null
+
+  return wrapped ? unwrapMessageContent(wrapped) : content
 }
