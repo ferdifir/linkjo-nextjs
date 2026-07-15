@@ -68,4 +68,25 @@ describe("whatsapp status", () => {
       lastError: null,
     })
   })
+
+  it("clears previous Baileys errors when lastError is patched to null", async () => {
+    process.env.WHATSAPP_PROVIDER = "baileys"
+
+    await writeWhatsappStatus({
+      connected: false,
+      lastError: "Stream Errored (conflict)",
+    })
+    await writeWhatsappStatus({
+      connected: true,
+      lastConnectedAt: "2026-07-15T00:10:00.000Z",
+      lastError: null,
+    })
+
+    await expect(readWhatsappStatus()).resolves.toMatchObject({
+      provider: "baileys",
+      connected: true,
+      lastConnectedAt: "2026-07-15T00:10:00.000Z",
+      lastError: null,
+    })
+  })
 })

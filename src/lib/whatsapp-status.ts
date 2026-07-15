@@ -64,11 +64,11 @@ export async function writeWhatsappStatus(patch: Partial<WhatsappRuntimeStatus>)
   const current = await readStatusFileOnly()
   const next: WhatsappRuntimeStatus = {
     provider: "baileys",
-    connected: patch.connected ?? current.connected ?? false,
-    lastConnectedAt: patch.lastConnectedAt ?? current.lastConnectedAt ?? null,
-    lastDisconnectedAt: patch.lastDisconnectedAt ?? current.lastDisconnectedAt ?? null,
-    lastError: patch.lastError ?? current.lastError ?? null,
-    phoneNumber: patch.phoneNumber ?? current.phoneNumber ?? null,
+    connected: valueFromPatch(patch, current, "connected", false),
+    lastConnectedAt: valueFromPatch(patch, current, "lastConnectedAt", null),
+    lastDisconnectedAt: valueFromPatch(patch, current, "lastDisconnectedAt", null),
+    lastError: valueFromPatch(patch, current, "lastError", null),
+    phoneNumber: valueFromPatch(patch, current, "phoneNumber", null),
     updatedAt: new Date().toISOString(),
   }
 
@@ -91,4 +91,15 @@ async function readStatusFileOnly(): Promise<Partial<WhatsappRuntimeStatus>> {
   } catch {
     return {}
   }
+}
+
+function valueFromPatch<K extends keyof WhatsappRuntimeStatus>(
+  patch: Partial<WhatsappRuntimeStatus>,
+  current: Partial<WhatsappRuntimeStatus>,
+  key: K,
+  fallback: WhatsappRuntimeStatus[K],
+) {
+  return Object.prototype.hasOwnProperty.call(patch, key)
+    ? patch[key]!
+    : current[key] ?? fallback
 }
