@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "wa:worker": "tsx src/workers/whatsapp-baileys-worker.ts",
+    "wa:worker": "tsx -r dotenv/config src/workers/whatsapp-baileys-worker.ts",
+    "wa:env": "tsx -r dotenv/config scripts/check-whatsapp-env.ts",
     "lint": "eslint",
     "test": "vitest run",
     "test:e2e": "playwright test"

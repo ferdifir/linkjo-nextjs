@@ -53,7 +53,7 @@ module.exports = {
     {
       name: "linkjo-wa-worker",
       script: "node_modules/.bin/tsx",
-      args: "src/workers/whatsapp-baileys-worker.ts",
+      args: "-r dotenv/config src/workers/whatsapp-baileys-worker.ts",
       cwd: "$REMOTE_ROOT/current",
       env: {
         NODE_ENV: "production",

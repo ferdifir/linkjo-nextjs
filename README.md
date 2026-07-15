@@ -129,6 +129,12 @@ Run the worker locally with:
 npm run wa:worker
 ```
 
+Check the WhatsApp environment loaded by Node/tsx with:
+
+```bash
+npm run wa:env
+```
+
 Production deploy manages the worker as PM2 app `linkjo-wa-worker` only when `WHATSAPP_PROVIDER=baileys`.
 
 ## Fonnte Webhook
