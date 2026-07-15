@@ -139,6 +139,7 @@ async function startSocket() {
       await handleWhatsappInbound({
         from: parsed.from,
         message: parsed.text,
+        replyTarget: parsed.replyJid,
         source: "baileys_worker",
       })
     }

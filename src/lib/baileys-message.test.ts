@@ -13,6 +13,7 @@ describe("Baileys message parser", () => {
       from: "628123456789",
       text: "halo",
       remoteJid: "628123456789@s.whatsapp.net",
+      replyJid: "628123456789@s.whatsapp.net",
     })
   })
 
@@ -54,5 +55,20 @@ describe("Baileys message parser", () => {
 
   it("builds a personal chat jid from a phone number", () => {
     expect(jidForPhone("+62 812-3456-789")).toBe("628123456789@s.whatsapp.net")
+  })
+
+  it("keeps lid chats as addressable reply jids", () => {
+    const parsed = parseBaileysMessage({
+      key: { remoteJid: "77322346586306@lid", fromMe: false },
+      message: { conversation: "halo" },
+    } as WAMessage)
+
+    expect(parsed).toEqual({
+      from: "77322346586306@lid",
+      text: "halo",
+      remoteJid: "77322346586306@lid",
+      replyJid: "77322346586306@lid",
+    })
+    expect(jidForPhone("77322346586306@lid")).toBe("77322346586306@lid")
   })
 })

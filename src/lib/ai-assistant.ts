@@ -26,8 +26,9 @@ export async function handleInboundCustomerMessage(input: {
   tenant: TenantProfile
   from: string
   message: string
+  replyTarget?: string
 }) {
-  const phone = normalizePhone(input.from)
+  const phone = normalizePhone(input.from) || cleanText(input.from, 120)
   const message = cleanText(input.message, 1000)
   if (!phone || !message) {
     return { reply: "Nomor WhatsApp atau pesan tidak valid." }
@@ -39,7 +40,7 @@ export async function handleInboundCustomerMessage(input: {
   const reply = actionReply ?? await answerWithWhatsappAgent({ tenant: input.tenant, phone, message })
 
   await writeHistory(input.tenant.id, phone, "assistant", reply)
-  await sendWhatsappMessage(phone, reply, { tenantId: input.tenant.id })
+  await sendWhatsappMessage(input.replyTarget || phone, reply, { tenantId: input.tenant.id })
   return { reply }
 }
 

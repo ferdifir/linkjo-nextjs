@@ -12,6 +12,7 @@ export type WhatsappInboundInput = {
   from: unknown
   message: unknown
   tenantSlug?: unknown
+  replyTarget?: string
   source: WhatsappInboundSource
   requestId?: string
   ip?: string
@@ -21,7 +22,9 @@ export type WhatsappInboundInput = {
 export async function handleWhatsappInbound(input: WhatsappInboundInput) {
   const startedAt = input.startedAt ?? Date.now()
   const tenantSlug = cleanText(input.tenantSlug, 50)
-  const from = normalizePhone(input.from)
+  const from = normalizePhone(input.from) || cleanText(input.from, 120)
+  const phone = normalizePhone(input.from)
+  const replyTarget = input.replyTarget || from
   const message = cleanText(input.message, 1000)
 
   if (!from || !message) {
@@ -48,12 +51,12 @@ export async function handleWhatsappInbound(input: WhatsappInboundInput) {
   })
 
   const intentToken = extractWhatsappIntentToken(message)
-  if (intentToken) {
-    const result = await consumeOwnerVerificationIntent(intentToken, from)
+  if (intentToken && phone) {
+    const result = await consumeOwnerVerificationIntent(intentToken, phone)
     if (result.consumed) {
       await auditEvent({
         actorType: "whatsapp",
-        actorIdentifier: from,
+        actorIdentifier: phone,
         action: "whatsapp.intent.consume",
         resourceType: "whatsapp_intent",
         metadata: { purpose: "VERIFY_OWNER_PHONE", source: input.source },
@@ -79,7 +82,7 @@ export async function handleWhatsappInbound(input: WhatsappInboundInput) {
   const tenant = await resolveWhatsappTenant({ tenantSlug, phone: from })
   if (!tenant) {
     const reply = fallbackReply(message)
-    const sendResult = await sendWhatsappMessage(from, reply)
+    const sendResult = await sendWhatsappMessage(replyTarget, reply)
     logger.info({
       event: "whatsapp.tenant.unresolved",
       request_id: input.requestId,
@@ -103,7 +106,7 @@ export async function handleWhatsappInbound(input: WhatsappInboundInput) {
       tenant_slug: tenant.slug,
       sender: maskPhone(from),
     })
-    const result = await handleInboundCustomerMessage({ tenant, from, message })
+    const result = await handleInboundCustomerMessage({ tenant, from, message, replyTarget: input.replyTarget })
     logger.info({
       event: "whatsapp.message.handled",
       request_id: input.requestId,

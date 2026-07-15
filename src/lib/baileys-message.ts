@@ -5,6 +5,7 @@ export type ParsedBaileysMessage = {
   from: string
   text: string
   remoteJid: string
+  replyJid: string
 }
 
 export function parseBaileysMessage(message: WAMessage): ParsedBaileysMessage | null {
@@ -18,13 +19,16 @@ export function parseBaileysMessage(message: WAMessage): ParsedBaileysMessage | 
   const text = extractMessageText(message)
   if (!text) return null
 
-  const from = normalizePhone(remoteJid.split("@")[0])
-  if (!from) return null
+  const from = normalizePhone(message.key.remoteJidAlt?.split("@")[0]) ||
+    normalizePhone(message.key.remoteJidUsername || "") ||
+    normalizePhone(remoteJid.split("@")[0]) ||
+    remoteJid
 
-  return { from, text, remoteJid }
+  return { from, text, remoteJid, replyJid: remoteJid }
 }
 
 export function jidForPhone(phone: string) {
+  if (phone.includes("@") && !phone.endsWith("@g.us") && phone !== "status@broadcast") return phone
   const normalized = normalizePhone(phone)
   return normalized ? `${normalized}@s.whatsapp.net` : null
 }
