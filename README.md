@@ -215,7 +215,7 @@ VPS_USER
 PRODUCTION_URL
 ```
 
-The deploy script uploads a timestamped release to `/var/www/linkjo-next/releases`, links the shared `.env`, runs `npm ci`, `prisma generate`, `prisma migrate deploy`, `npm run build`, then switches `/var/www/linkjo-next/current` and reloads PM2. If the local smoke test fails, it switches back to the previous release.
+The deploy script syncs the latest source directly to `/var/www/linkjo-next/current`, links the shared `.env`, runs `npm ci`, `prisma generate`, `prisma migrate deploy`, `npm run build`, then reloads PM2. It keeps only this current build on the VPS and removes the old release directory layout if present.
 
 Manual deploy from this machine:
 
@@ -223,19 +223,9 @@ Manual deploy from this machine:
 scripts/deploy-vps.sh
 ```
 
-Rollback to the previous release:
+Release versioning uses semantic version tags. Tag deploys must match `package.json` exactly, for example package version `0.2.1` deploys from tag `v0.2.1`.
 
-```bash
-scripts/rollback-vps.sh
-```
-
-Rollback to a specific release directory name:
-
-```bash
-scripts/rollback-vps.sh 20260712180000-abcdef123456
-```
-
-Release versioning uses semantic version tags. For a patch release:
+For a patch release:
 
 ```bash
 npm version patch
@@ -243,6 +233,18 @@ git push origin main --follow-tags
 ```
 
 Use `npm version minor` for compatible feature releases and `npm version major` for breaking releases.
+
+Rollback uses Git instead of saved server builds. To roll production back to a previous semantic version, move `main` back to that tag and create a new patch release from that code:
+
+```bash
+git fetch --tags
+git switch main
+git reset --hard v0.2.0
+npm version patch
+git push origin main --follow-tags --force-with-lease
+```
+
+The new tag triggers the deploy workflow and rebuilds `/var/www/linkjo-next/current` from that reverted source.
 
 ## Notes
 

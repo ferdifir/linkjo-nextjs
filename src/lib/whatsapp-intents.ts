@@ -5,6 +5,13 @@ import { getPublicAppUrl } from "@/lib/public-url"
 
 const TOKEN_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
 const TOKEN_LENGTH = 6
+const TOKEN_PATTERN = "[A-HJ-NP-Z2-9]{6,10}"
+const TOKEN_ONLY_PATTERN = new RegExp(`^${TOKEN_PATTERN}$`)
+const TOKEN_MESSAGE_PATTERNS = [
+  new RegExp(`^\\s*LINKJO\\s+(${TOKEN_PATTERN})\\b`),
+  new RegExp(`\\bKODE\\s+(?:VERIFIKASI|LOGIN|MASUK)\\s*(?:SAYA\\s*)?[:#-]?\\s*(${TOKEN_PATTERN})\\b`),
+  new RegExp(`\\b(?:VERIFIKASI|LOGIN|MASUK)\\s+(?:LINKJO\\s+)?(?:DENGAN\\s+)?KODE\\s*[:#-]?\\s*(${TOKEN_PATTERN})\\b`),
+]
 
 export function generateWhatsappIntentToken() {
   const bytes = randomBytes(TOKEN_LENGTH)
@@ -16,12 +23,18 @@ export function generateWhatsappIntentToken() {
 }
 
 export function extractWhatsappIntentToken(message: string) {
-  const match = message.toUpperCase().match(/\b[A-HJ-NP-Z2-9]{6,10}\b/)
-  return match?.[0] || null
+  const upper = message.toUpperCase()
+  for (const pattern of TOKEN_MESSAGE_PATTERNS) {
+    const match = upper.match(pattern)
+    if (match?.[1]) return match[1]
+  }
+
+  const trimmed = upper.trim()
+  return TOKEN_ONLY_PATTERN.test(trimmed) ? trimmed : null
 }
 
 export function whatsappIntentMessage(token: string) {
-  return `LINKJO ${token}`
+  return `Halo Linkjo, saya ingin verifikasi nomor WhatsApp saya. Kode verifikasi: ${token}`
 }
 
 export function whatsappServicePhone() {

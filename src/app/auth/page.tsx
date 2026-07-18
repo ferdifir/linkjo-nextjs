@@ -228,7 +228,7 @@ export default function AuthPage() {
               </h1>
               <p className="mt-1 text-xs leading-relaxed text-zinc-500">
                 {visibleStep === "phone" && "Masuk pakai nomor WhatsApp."}
-                {visibleStep === "whatsapp" && `Kirim pesan ${whatsappIntent?.contextCode || ""} dari WhatsApp kamu`}
+                {visibleStep === "whatsapp" && "Kirim pesan verifikasi dari WhatsApp kamu"}
                 {visibleStep === "otp" && `Kode dikirim ke ${phone || user?.phone || ""}`}
                 {visibleStep === "username" && `${publicHost}/{username}`}
               </p>
@@ -280,8 +280,8 @@ export default function AuthPage() {
             {visibleStep === "whatsapp" && whatsappIntent && (
               <div className="space-y-4">
                 <div className="rounded-lg border border-white/10 bg-zinc-950/60 p-3">
-                  <p className="text-xs text-zinc-500">Pesan yang harus dikirim</p>
-                  <p className="mt-1 font-mono text-sm font-semibold text-emerald-400">{whatsappIntent.message}</p>
+                  <p className="text-xs text-zinc-500">Pesan yang akan dikirim</p>
+                  <p className="mt-1 text-sm font-medium leading-relaxed text-emerald-400">{whatsappIntent.message}</p>
                 </div>
                 <a
                   href={whatsappIntent.waLink}
